@@ -1,0 +1,445 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  background: #f6f6f7;
+  min-height: 100%;
+}
+body {
+  font-family: Manrope, system-ui, sans-serif;
+  color: #1b1b1b;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::selection {
+  background: #bfdcfa;
+  color: #0a0a0c;
+}
+:focus-visible {
+  outline: 2px solid #1d7fe0;
+  outline-offset: 2px;
+}
+
+/* Luxury scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #135fb8 #efeff1;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #efeff1;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(#1d7fe0, #0a0a0c);
+  border-radius: 999px;
+  border: 2px solid #efeff1;
+}
+
+@layer components {
+  /* Blue-black gradient: har dark section (hero, admin card, footer, splash) par */
+  .bg-royal {
+    background-image:
+      radial-gradient(
+        900px circle at 85% -10%,
+        rgba(29, 127, 224, 0.35),
+        transparent 60%
+      ),
+      radial-gradient(
+        700px circle at -10% 110%,
+        rgba(74, 163, 240, 0.18),
+        transparent 60%
+      ),
+      linear-gradient(135deg, #060607 0%, #17171b 55%, #0a3a78 120%);
+  }
+  .bg-royal-deep {
+    background-image: linear-gradient(90deg, #060607, #111114 50%, #060607);
+  }
+  .gold-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      100deg,
+      #4aa3f0,
+      #eaf4ff 40%,
+      #7ab9f3 65%,
+      #dcebfd
+    );
+    background-size: 220% 100%;
+  }
+  .gold-bg {
+    background-image: linear-gradient(120deg, #0a0a0c, #135fb8 60%, #17171b);
+  }
+  .champ-bg {
+    background-image: linear-gradient(120deg, #1d7fe0, #7ab9f3 50%, #1d7fe0);
+  }
+  .btn {
+    @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full px-6 py-3 text-sm font-semibold tracking-wide transition duration-500 disabled:cursor-not-allowed disabled:opacity-60 active:scale-95;
+  }
+  .btn-gold {
+    @apply btn text-white shadow-lg shadow-gold-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-gold-500/50;
+    background-image: linear-gradient(
+      120deg,
+      #0a0a0c,
+      #0a3a78 50%,
+      #135fb8 80%,
+      #0a0a0c
+    );
+    background-size: 240% 100%;
+    background-position: 0 0;
+  }
+  .btn-gold:hover {
+    background-position: 100% 0;
+  }
+  .btn-gold::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.55),
+      transparent
+    );
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  .btn-gold:hover::after {
+    animation: sheen 0.9s ease;
+  }
+  .btn-champ {
+    @apply btn text-royal shadow-lg shadow-champ-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-champ-500/50;
+    background-image: linear-gradient(120deg, #1d7fe0, #9ccbf7 50%, #1d7fe0);
+    background-size: 200% 100%;
+  }
+  .btn-champ:hover {
+    background-position: 100% 0;
+  }
+  .btn-royal {
+    @apply btn bg-royal text-champ-200 hover:-translate-y-0.5 hover:bg-royal-light hover:shadow-lg;
+  }
+  .btn-line {
+    @apply btn border border-gold-300 bg-white/70 text-royal hover:-translate-y-0.5 hover:border-champ-400 hover:bg-champ-100/50 hover:shadow-md;
+  }
+  .btn-ghost-light {
+    @apply btn border border-champ-300/50 bg-white/5 text-champ-100 backdrop-blur hover:-translate-y-0.5 hover:border-champ-300 hover:bg-white/10;
+  }
+  .field {
+    @apply w-full rounded-xl border border-gold-200 bg-white px-4 py-3 text-sm outline-none transition duration-300 placeholder:text-neutral-400 focus:border-champ-400 focus:ring-4 focus:ring-champ-100;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-royal;
+  }
+  .glass {
+    @apply border border-white/15 bg-white/[0.06] backdrop-blur-md;
+  }
+  .card-lux {
+    @apply rounded-3xl border border-champ-200/70 bg-white shadow-sm transition duration-500 hover:-translate-y-2 hover:border-champ-300 hover:shadow-2xl hover:shadow-champ-300/40;
+  }
+  .container-x {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.32em] text-champ-500;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 34px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #1d7fe0);
+  }
+  .hairline {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #4aa3f0, transparent);
+  }
+  .title-xl {
+    @apply font-display text-5xl font-bold leading-[1.02] text-royal sm:text-6xl;
+  }
+  .title-lg {
+    @apply font-display text-4xl font-bold leading-tight text-royal sm:text-5xl;
+  }
+  /* Soft film grain over dark sections */
+  .grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.07;
+    background-image: url("/grain.png");
+    background-size: 100px 100px;
+  }
+  /* Underline that draws itself on hover */
+  .link-draw {
+    background: linear-gradient(#1d7fe0, #1d7fe0) no-repeat 0 100% / 0 1px;
+    transition: background-size 0.4s ease;
+  }
+  .link-draw:hover {
+    background-size: 100% 1px;
+  }
+  /* Round loader used in cart */
+  .ring-loader {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    background: conic-gradient(
+      from 0deg,
+      rgba(29, 127, 224, 0),
+      #1d7fe0 70%,
+      #bfdcfa
+    );
+    -webkit-mask: radial-gradient(
+      farthest-side,
+      transparent calc(100% - 5px),
+      #000 calc(100% - 4px)
+    );
+    mask: radial-gradient(
+      farthest-side,
+      transparent calc(100% - 5px),
+      #000 calc(100% - 4px)
+    );
+    animation: ringSpin 0.85s linear infinite;
+  }
+  .ring-loader-sm {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@keyframes sheen {
+  from {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  to {
+    transform: translateX(260%) skewX(-18deg);
+  }
+}
+@keyframes textShine {
+  to {
+    background-position: -220% 0;
+  }
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee {
+  animation: marquee 40s linear infinite;
+  will-change: transform;
+}
+.marquee-pause:hover .marquee {
+  animation-play-state: paused;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes livePing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(29, 127, 224, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(29, 127, 224, 0);
+  }
+}
+.live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #4aa3f0;
+  animation: livePing 1.6s ease-out infinite;
+}
+@keyframes barGrow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.fade-in {
+  animation: fadeIn 0.3s ease both;
+}
+
+/* ---------------- Luxury extras ---------------- */
+@property --ang {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes angSpin {
+  to {
+    --ang: 360deg;
+  }
+}
+/* Hover (ya hamesha) par ghoomta hua chamakta border */
+.glow-border {
+  position: relative;
+}
+.glow-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--ang),
+    transparent 0 55%,
+    #4aa3f0 72%,
+    #eaf4ff 84%,
+    transparent 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.55;
+  transition: opacity 0.5s ease;
+  animation: angSpin 6s linear infinite paused;
+  pointer-events: none;
+  z-index: 3;
+}
+.glow-border:hover::before {
+  opacity: 1;
+  animation-play-state: running;
+}
+.card-glow {
+  position: relative;
+}
+.card-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--ang),
+    transparent 0 55%,
+    #4aa3f0 72%,
+    #eaf4ff 84%,
+    transparent 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  animation: angSpin 4s linear infinite paused;
+  pointer-events: none;
+  z-index: 3;
+}
+.card-glow:hover::before {
+  opacity: 1;
+  animation-play-state: running;
+}
+
+/* Numbered badge (01, 02...) */
+.num-badge {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 700;
+  line-height: 1;
+  background-image: linear-gradient(180deg, #4aa3f0, rgba(74, 163, 240, 0.08));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* FAQ accordion (grid-template-rows 0fr -> 1fr) */
+.faq-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.faq-body > div {
+  overflow: hidden;
+}
+.faq-open .faq-body {
+  grid-template-rows: 1fr;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(18px, -22px, 0);
+  }
+}
+@keyframes shimmerBg {
+  to {
+    background-position: -200% 0;
+  }
+}
+.shimmer {
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmerBg 2.4s linear infinite;
+}
+
+/* Chhoti screens par kabhi horizontal scroll na aaye */
+img,
+video {
+  max-width: 100%;
+}
+
+/* ---------------- Speed / smooth scroll ---------------- */
+/* Page ke andar chhote chips/cards par backdrop-blur har scroll frame par dobara calculate hota tha:
+   ab solid rehta hai (navbar, drawer, popups ka blur waisa hi hai). */
+main .backdrop-blur,
+main .backdrop-blur-sm,
+main .backdrop-blur-md {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Mobile / chhoti screens: bade glow orbs ka pulse band (GPU par bohat bhari) */
+@media (max-width: 767px) {
+  .animate-glow {
+    animation: none;
+    opacity: 0.6;
+  }
+}

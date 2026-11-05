@@ -1,0 +1,217 @@
+import { Suspense, lazy, useEffect, useRef } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import CartDrawer from "./components/CartDrawer";
+import { Mark } from "./components/Logo";
+import { useAuth, useGeo } from "./store";
+import { brandFor } from "./config";
+import Home from "./pages/Home";
+
+// Baqi pages sirf tab download hote hain jab khulen (pehli load bohat halki rehti hai).
+// Admin wale pages me PDF/zip libraries hain, wo ab aam customers ko download hi nahi hoti.
+const Shop = lazy(() => import("./pages/Shop"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const OrderPlaced = lazy(() => import("./pages/OrderPlaced"));
+const Contact = lazy(() => import("./pages/Contact"));
+const SignIn = lazy(() =>
+  import("./pages/Auth").then((m) => ({ default: m.SignIn })),
+);
+const SignUp = lazy(() =>
+  import("./pages/Auth").then((m) => ({ default: m.SignUp })),
+);
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminProductForm = lazy(() => import("./pages/AdminProductForm"));
+const Profile = lazy(() => import("./pages/Profile"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const About = lazy(() => import("./pages/About"));
+const Services = lazy(() => import("./pages/Services"));
+const WhyUs = lazy(() => import("./pages/WhyUs"));
+const Events = lazy(() => import("./pages/Events"));
+
+// Home khulne ke baad khali waqt me zyada use hone wale pages peeche se download kar lo
+function usePrefetchPages() {
+  useEffect(() => {
+    const run = () => {
+      import("./pages/Shop");
+      import("./pages/ProductDetail");
+      import("./pages/Cart");
+      import("./pages/Checkout");
+    };
+    const t =
+      "requestIdleCallback" in window
+        ? window.requestIdleCallback(run, { timeout: 4000 })
+        : setTimeout(run, 2500);
+    return () => {
+      if ("cancelIdleCallback" in window) window.cancelIdleCallback(t);
+      else clearTimeout(t);
+    };
+  }, []);
+}
+
+function PageFallback() {
+  return <div className="min-h-[60vh]" aria-hidden="true" />;
+}
+
+function ScrollTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname]);
+  return null;
+}
+
+function ScrollProgress() {
+  const bar = useRef(null);
+  useEffect(() => {
+    let raf = 0;
+    const draw = () => {
+      raf = 0;
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      const p = max > 0 ? Math.min(1, Math.max(0, h.scrollTop / max)) : 0;
+      if (bar.current) bar.current.style.transform = `scaleX(${p})`;
+    };
+    // React state nahi: scroll par sirf ek transform badalta hai (re-render zero)
+    const on = () => {
+      if (!raf) raf = requestAnimationFrame(draw);
+    };
+    draw();
+    window.addEventListener("scroll", on, { passive: true });
+    window.addEventListener("resize", on, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", on);
+      window.removeEventListener("resize", on);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-[120] h-[3px]">
+      <div
+        ref={bar}
+        className="champ-bg h-full w-full origin-left will-change-transform"
+        style={{ transform: "scaleX(0)" }}
+      />
+    </div>
+  );
+}
+
+function Splash() {
+  return (
+    <div className="grain relative grid min-h-screen place-items-center overflow-hidden bg-royal">
+      <div className="pointer-events-none absolute h-96 w-96 animate-glow rounded-full bg-champ-400/25 blur-3xl" />
+      <div className="relative text-center">
+        <div className="relative mx-auto grid h-28 w-28 place-items-center">
+          <div className="ring-loader absolute inset-0 !h-28 !w-28" />
+          <div className="w-fit animate-spinSlow">
+            <Mark size={72} />
+          </div>
+        </div>
+        <p className="mt-6 font-display text-3xl font-semibold text-champ-200">
+          Finding your location…
+        </p>
+        <p className="mt-1 text-xs tracking-wide text-champ-100/60">
+          Prices and products are set for your country
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
+  const { ready, country } = useGeo();
+  const { user } = useAuth();
+  const { pathname } = useLocation();
+  usePrefetchPages();
+
+  // Browser tab title + search description: Pakistan = Apna Pani (water), baqi = Mithai House (mithai)
+  useEffect(() => {
+    if (!country) return;
+    const pk = country.code === "PK";
+    const b = brandFor(country.code);
+    document.title = pk
+      ? `${b.name} - Pure Drinking Water`
+      : "Mithai House - Luxury Mithai & Special Event Boxes";
+    const desc = pk
+      ? `${b.name}: purified drinking water in 500 ml, 1.5 L and 19 L bottles. Home and office delivery with pay on delivery.`
+      : "Mithai House: luxury Pakistani mithai in 20 varieties. Special event boxes for weddings, birthdays and baby born. Second-day delivery.";
+    let m = document.querySelector('meta[name="description"]');
+    if (!m) {
+      m = document.createElement("meta");
+      m.setAttribute("name", "description");
+      document.head.appendChild(m);
+    }
+    m.setAttribute("content", desc);
+  }, [country]);
+
+  if (!ready) return <Splash />;
+  return (
+    <div className="flex min-h-screen flex-col bg-[#f6f6f7]">
+      <ScrollTop />
+      <ScrollProgress />
+      <Navbar />
+      <CartDrawer />
+      <main key={pathname} className="flex-1 animate-pageIn">
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order-placed/:id" element={<OrderPlaced />} />
+            <Route
+              path="/profile"
+              element={
+                user ? (
+                  <Profile />
+                ) : (
+                  <Navigate to="/login" state={{ from: "/profile" }} replace />
+                )
+              }
+            />
+            <Route path="/about" element={<About />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/why-us" element={<WhyUs />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route
+              path="/login"
+              element={user ? <Navigate to="/" replace /> : <SignIn />}
+            />
+            <Route
+              path="/signup"
+              element={user ? <Navigate to="/" replace /> : <SignUp />}
+            />
+            <Route
+              path="/admin"
+              element={
+                user?.isAdmin ? (
+                  <Admin />
+                ) : (
+                  <Navigate to={user ? "/" : "/login"} replace />
+                )
+              }
+            />
+            {["/admin/products/new", "/admin/products/:id/edit"].map((path) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  user?.isAdmin ? (
+                    <AdminProductForm />
+                  ) : (
+                    <Navigate to={user ? "/" : "/login"} replace />
+                  )
+                }
+              />
+            ))}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </main>
+      <Footer />
+    </div>
+  );
+}
