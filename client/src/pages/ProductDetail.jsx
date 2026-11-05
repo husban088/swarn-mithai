@@ -17,6 +17,7 @@ import EventBanner, { DeliveryNote } from "../components/EventBanner";
 import { trackProductView } from "../lib/api";
 import { PriceTag, SaleBadge } from "../components/SaleBanner";
 import VariantChips from "../components/VariantChips";
+import WaterComposition from "../components/WaterComposition";
 import { pickVariant, viewOf } from "../lib/variants";
 import { CATEGORIES } from "../config";
 import { useGeo, useShop, useToast } from "../store";
@@ -195,6 +196,7 @@ export default function ProductDetail() {
               Fresh, quality checked
             </div>
           </div>
+          {p.category === "aqua" && <WaterComposition className="mt-6" />}
           <DeliveryNote className="mt-3" />
           <EventBanner variant="compact" className="mt-3" />
         </div>

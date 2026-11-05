@@ -21,6 +21,7 @@ import { trackProductView } from "../lib/api";
 import { useGeo, useShop } from "../store";
 import { PriceTag, SaleBadge } from "./SaleBanner";
 import VariantChips from "./VariantChips";
+import WaterComposition from "./WaterComposition";
 import { pickVariant, viewOf } from "../lib/variants";
 
 // Product ki poori detail wala luxury modal (card ke icon par click se khulta hai)
@@ -205,6 +206,8 @@ export default function ProductModal({ p: baseP, v: initV, onClose }) {
               </div>
             ))}
           </div>
+
+          {aqua && <WaterComposition className="mt-5" />}
 
           <div className="mt-auto pt-7">
             <div className="flex flex-wrap items-center gap-3">

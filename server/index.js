@@ -476,7 +476,10 @@ async function refillUnlocked(user) {
     .select("id")
     .eq("user_id", user.id)
     .eq("status", "delivered")
-    .contains("items", [{ category: "aqua", variant: "first-time" }])
+    .contains(
+      "items",
+      JSON.stringify([{ category: "aqua", variant: "first-time" }]),
+    )
     .limit(1);
   if (error) throw error;
   return !!data?.length;
