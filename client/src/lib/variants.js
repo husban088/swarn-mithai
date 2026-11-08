@@ -13,6 +13,7 @@ export const pickVariant = (p, key) => {
 // Product ko chune hue option ke hisaab se dikhao (price + image + note badal jati hain)
 // Option ki image: admin ne upload ki ho wahi, warna Special Box ki default image
 export const variantImage = (p, v) =>
+  v?.images?.[0] ||
   v?.image ||
   (p?.category === "sweets" && v?.key === SPECIAL_BOX_KEY
     ? SPECIAL_BOX_IMAGE
@@ -23,7 +24,9 @@ export const viewOf = (p, key) => {
   if (!v) return p;
   const base = imagesOf(p);
   const vi = variantImage(p, v);
-  const images = vi ? [vi, ...base.filter((u) => u !== vi)] : base;
+  // Option ki apni images hon to sirf wahi dikhti hain (har option ki alag gallery)
+  const own = Array.isArray(v.images) && v.images.length ? v.images : null;
+  const images = own || (vi ? [vi, ...base.filter((u) => u !== vi)] : base);
   return {
     ...p,
     price: v.price,

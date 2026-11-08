@@ -8,11 +8,12 @@ import {
 } from "../config";
 
 // ---------- palette ----------
-// Site ki theme: black + red + white
+// Site ki theme: black + blue + white (USA Mithai House aur Pakistan Evelyn One dono invoices me yehi)
 const BLACK = [11, 11, 13];
 const BLACK_DEEP = [4, 4, 5];
-const RED = [226, 40, 48];
-const RED_SOFT = [253, 236, 236];
+const BLUE = [29, 127, 224]; // site ka water blue
+const BLUE_SOFT = [232, 242, 253];
+const BLUE_DEEP = [10, 58, 120]; // gehra blue (paid stamp)
 const INK = [27, 27, 27];
 const MUTED = [110, 110, 118];
 const LINE = [228, 228, 232];
@@ -124,20 +125,20 @@ function drawHeader(doc, brand, order, first) {
   // navy band
   fill(doc, BLACK);
   doc.rect(0, 0, PAGE_W, first ? 58 : 22, "F");
-  fill(doc, RED);
+  fill(doc, BLUE);
   doc.rect(0, first ? 58 : 22, PAGE_W, 1.4, "F");
 
   // monogram circle
   const cy = first ? 29 : 11;
   const r = first ? 11 : 6.5;
-  stroke(doc, RED);
+  stroke(doc, BLUE);
   doc.setLineWidth(0.7);
   doc.circle(M + r, cy, r, "S");
   doc.setLineWidth(0.25);
   doc.circle(M + r, cy, r - 1.4, "S");
   doc.setFont("times", "bold");
   doc.setFontSize(first ? 20 : 12);
-  color(doc, RED);
+  color(doc, BLUE);
   doc.text(brand.letter, M + r, cy + (first ? 2.4 : 1.4), { align: "center" });
 
   if (first) {
@@ -147,12 +148,12 @@ function drawHeader(doc, brand, order, first) {
     spaced(doc, clean(brand.name).toUpperCase(), M + 28, 27, 1.6);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    color(doc, RED);
+    color(doc, BLUE);
     spaced(doc, clean(brand.tagline).toUpperCase(), M + 28, 34, 1.4);
 
     doc.setFont("times", "bold");
     doc.setFontSize(30);
-    color(doc, RED);
+    color(doc, BLUE);
     spaced(doc, "INVOICE", PAGE_W - M, 28, 2.2, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -165,7 +166,7 @@ function drawHeader(doc, brand, order, first) {
     spaced(doc, clean(brand.name).toUpperCase(), M + 17, 12.5, 1.2);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    color(doc, RED);
+    color(doc, BLUE);
     doc.text(`INVOICE  ${invoiceNo(order)}  (continued)`, PAGE_W - M, 12.5, {
       align: "right",
     });
@@ -174,7 +175,7 @@ function drawHeader(doc, brand, order, first) {
 
 function drawFooter(doc, brand, country, page, pages) {
   const info = COUNTRIES[country] || COUNTRIES.US;
-  stroke(doc, RED);
+  stroke(doc, BLUE);
   doc.setLineWidth(0.5);
   doc.line(M, PAGE_H - 22, PAGE_W - M, PAGE_H - 22);
   doc.setFont("times", "italic");
@@ -212,7 +213,7 @@ function drawFooter(doc, brand, country, page, pages) {
 function label(doc, text, x, y) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
-  color(doc, RED);
+  color(doc, BLUE);
   spaced(doc, text.toUpperCase(), x, y, 1);
 }
 
@@ -229,13 +230,20 @@ function kv(doc, k, v, x, y, w) {
   return Math.max(1, lines.length) * 4.4;
 }
 
-// Order kis brand ka hai: sirf mithai (sweets) = "US" (Mithai House), sirf water (aqua) = "PK" (Apna Pani).
-// Mix ya purana order (category save nahi) = country se.
+// Order kis brand ka hai: sirf mithai (sweets) = "US" (Mithai House), sirf water (aqua) = "PK" (Evelyn One).
+// Mix order = country se.
+// Purane orders me item ki category save nahi hoti thi (Pakistan ka mithai order bhi Evelyn One ban jata tha),
+// isliye category na ho to item ke naam se pehchante hain: water ke lafz = aqua, baqi sab mithai.
+const AQUA_WORDS =
+  /\b(water|pani|aqua|bottle|bottles|jar|refill|dispenser|litre|liter|ltr|mineral|apna|evelyn)\b|\b\d+(\.\d+)?\s?(l|ml|ltr)\b/i;
+const itemCategory = (it) => {
+  if (it?.category === "sweets" || it?.category === "aqua") return it.category;
+  return AQUA_WORDS.test(String(it?.name || "")) ? "aqua" : "sweets";
+};
+
 export const brandKeyOf = (order) => {
   const cats = new Set(
-    (Array.isArray(order?.items) ? order.items : [])
-      .map((i) => i.category)
-      .filter(Boolean),
+    (Array.isArray(order?.items) ? order.items : []).map(itemCategory),
   );
   if (cats.size === 1) return cats.has("sweets") ? "US" : "PK";
   return order?.country === "PK" ? "PK" : "US";
@@ -246,7 +254,7 @@ export const brandKeyOf = (order) => {
 function renderInvoice(doc, order) {
   const startPage = doc.getNumberOfPages();
   const country = order.country === "PK" ? "PK" : "US";
-  // Brand / contact details order ke products ke hisaab se: sirf mithai = Mithai House, sirf water = Apna Pani
+  // Brand / contact details order ke products ke hisaab se: sirf mithai = Mithai House, sirf water = Evelyn One
   const brandKey = brandKeyOf(order);
   const brand = BRANDS[brandKey] || BRANDS.US;
   const cur = order.currency === "PKR" ? "PKR" : "USD";
@@ -268,13 +276,13 @@ function renderInvoice(doc, order) {
     ["TIME", dp.time],
   ];
   const cw = (PAGE_W - 2 * M) / cells.length;
-  fill(doc, RED_SOFT);
+  fill(doc, BLUE_SOFT);
   doc.roundedRect(M, y, PAGE_W - 2 * M, 17, 2, 2, "F");
   cells.forEach(([k, v], i) => {
     const x = M + i * cw + 5;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.5);
-    color(doc, RED);
+    color(doc, BLUE);
     spaced(doc, k, x, y + 6.2, 1);
     doc.setFont("times", "bold");
     doc.setFontSize(i === 0 ? 11 : 12);
@@ -297,7 +305,7 @@ function renderInvoice(doc, order) {
     doc.setLineWidth(0.4);
     fill(doc, [255, 255, 255]);
     doc.roundedRect(x, y, cardW, cardH, 2.5, 2.5, "FD");
-    fill(doc, RED);
+    fill(doc, BLUE);
     doc.rect(x, y + 4, 1.2, 9, "F");
   });
 
@@ -387,7 +395,7 @@ function renderInvoice(doc, order) {
     doc.roundedRect(M, yy, PAGE_W - 2 * M, 9, 1.5, 1.5, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.5);
-    color(doc, RED);
+    color(doc, BLUE);
     spaced(doc, "#", cols.n, yy + 5.8, 0.8);
     spaced(doc, "ITEM", cols.name, yy + 5.8, 0.8);
     spaced(doc, "PACK / UNIT", cols.unit, yy + 5.8, 0.8);
@@ -499,12 +507,12 @@ function renderInvoice(doc, order) {
   ty += 1;
   fill(doc, BLACK_DEEP);
   doc.roundedRect(tx, ty, 78, 15, 2, 2, "F");
-  stroke(doc, RED);
+  stroke(doc, BLUE);
   doc.setLineWidth(0.5);
   doc.roundedRect(tx + 0.9, ty + 0.9, 76.2, 13.2, 1.6, 1.6, "S");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
-  color(doc, RED);
+  color(doc, BLUE);
   spaced(doc, "GRAND TOTAL", tx + 5, ty + 9, 1.2);
   doc.setFont("times", "bold");
   doc.setFontSize(15);
@@ -519,10 +527,10 @@ function renderInvoice(doc, order) {
     doc.setFontSize(9);
     const txt = paid ? "PAID IN FULL" : "PAYMENT DUE ON DELIVERY";
     const w = spacedWidth(doc, txt, 0.8) + 12;
-    stroke(doc, paid ? [34, 139, 94] : RED);
+    stroke(doc, paid ? BLUE_DEEP : BLUE);
     doc.setLineWidth(0.7);
     doc.roundedRect(PAGE_W - M - w, stampY - 6, w, 10, 2, 2, "S");
-    color(doc, paid ? [34, 139, 94] : RED);
+    color(doc, paid ? BLUE_DEEP : BLUE);
     spaced(doc, txt, PAGE_W - M - w / 2, stampY + 0.4, 0.8, {
       align: "center",
     });
@@ -560,34 +568,34 @@ const slug = (t) =>
     .slice(0, 60) || "all";
 const byDateAsc = (a, b) => new Date(a.created_at) - new Date(b.created_at);
 
-function coverHeader(doc, first, period) {
+function coverHeader(doc, first, period, brandName = "MITHAI HOUSE & EVELYN ONE", letter = "S") {
   fill(doc, BLACK);
   doc.rect(0, 0, PAGE_W, first ? 58 : 22, "F");
-  fill(doc, RED);
+  fill(doc, BLUE);
   doc.rect(0, first ? 58 : 22, PAGE_W, 1.4, "F");
   const cy = first ? 29 : 11;
   const r = first ? 11 : 6.5;
-  stroke(doc, RED);
+  stroke(doc, BLUE);
   doc.setLineWidth(0.7);
   doc.circle(M + r, cy, r, "S");
   doc.setLineWidth(0.25);
   doc.circle(M + r, cy, r - 1.4, "S");
   doc.setFont("times", "bold");
   doc.setFontSize(first ? 20 : 12);
-  color(doc, RED);
-  doc.text("S", M + r, cy + (first ? 2.4 : 1.4), { align: "center" });
+  color(doc, BLUE);
+  doc.text(letter, M + r, cy + (first ? 2.4 : 1.4), { align: "center" });
   if (first) {
     doc.setFont("times", "bold");
     doc.setFontSize(18);
     color(doc, [255, 255, 255]);
-    spaced(doc, "MITHAI HOUSE & APNA PANI", M + 28, 27, 1);
+    spaced(doc, brandName, M + 28, 27, 1);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    color(doc, RED);
+    color(doc, BLUE);
     spaced(doc, "INVOICE BUNDLE", M + 28, 34, 1.4);
     doc.setFont("times", "bold");
     doc.setFontSize(20);
-    color(doc, RED);
+    color(doc, BLUE);
     spaced(doc, "STATEMENT", PAGE_W - M, 27, 1.2, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -600,16 +608,26 @@ function coverHeader(doc, first, period) {
     spaced(doc, "SALES STATEMENT", M + 17, 12.5, 1.2);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    color(doc, RED);
+    color(doc, BLUE);
     doc.text(clean(period) + "  (continued)", PAGE_W - M, 12.5, {
       align: "right",
     });
   }
 }
 
+// Cover par brand: sab orders Mithai House ke = Mithai House, sab Evelyn One ke = Evelyn One, mix = dono
+function coverBrand(orders) {
+  const keys = new Set(orders.map(brandKeyOf));
+  if (keys.size === 1) {
+    const b = BRANDS[[...keys][0]] || BRANDS.US;
+    return [clean(b.name).toUpperCase(), b.letter];
+  }
+  return ["MITHAI HOUSE & EVELYN ONE", "S"];
+}
+
 function drawCover(doc, orders, period) {
   const start = doc.getNumberOfPages();
-  coverHeader(doc, true, period);
+  coverHeader(doc, true, period, ...coverBrand(orders));
 
   let units = 0;
   const tot = { PKR: 0, USD: 0 };
@@ -628,13 +646,13 @@ function drawCover(doc, orders, period) {
     ["SALES - USA", money(tot.USD, "USD")],
   ];
   const cw = (PAGE_W - 2 * M) / stats.length;
-  fill(doc, RED_SOFT);
+  fill(doc, BLUE_SOFT);
   doc.roundedRect(M, y, PAGE_W - 2 * M, 19, 2, 2, "F");
   stats.forEach(([k, v], i) => {
     const x = M + i * cw + 5;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.5);
-    color(doc, RED);
+    color(doc, BLUE);
     spaced(doc, k, x, y + 6.5, 1);
     doc.setFont("times", "bold");
     doc.setFontSize(13);
@@ -671,7 +689,7 @@ function drawCover(doc, orders, period) {
     doc.roundedRect(M, yy, PAGE_W - 2 * M, 9, 1.5, 1.5, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.5);
-    color(doc, RED);
+    color(doc, BLUE);
     spaced(doc, "INVOICE", col.inv, yy + 5.8, 0.8);
     spaced(doc, "DATE", col.date, yy + 5.8, 0.8);
     spaced(doc, "CUSTOMER", col.cust, yy + 5.8, 0.8);
@@ -684,7 +702,7 @@ function drawCover(doc, orders, period) {
   orders.forEach((o, idx) => {
     if (y + 8 > PAGE_H - 28) {
       doc.addPage();
-      coverHeader(doc, false, period);
+      coverHeader(doc, false, period, ...coverBrand(orders));
       y = head(32);
     }
     if (idx % 2 === 0) {
@@ -720,7 +738,7 @@ function drawCover(doc, orders, period) {
   const end = doc.getNumberOfPages();
   for (let p = start; p <= end; p++) {
     doc.setPage(p);
-    stroke(doc, RED);
+    stroke(doc, BLUE);
     doc.setLineWidth(0.5);
     doc.line(M, PAGE_H - 22, PAGE_W - M, PAGE_H - 22);
     doc.setFont("times", "italic");

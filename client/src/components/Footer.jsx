@@ -32,7 +32,7 @@ export default function Footer() {
           <Logo light />
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-champ-100/70">
             {isPK
-              ? "Apna Pani purified drinking water, tested and sealed fresh. Delivered to your door with care."
+              ? "Evelyn One purified drinking water, tested and sealed fresh. Delivered to your door with care."
               : "Made in small batches with pure ghee, real khoya and patience."}
           </p>
         </div>

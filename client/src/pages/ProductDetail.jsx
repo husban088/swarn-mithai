@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -21,10 +21,19 @@ import WaterComposition from "../components/WaterComposition";
 import { pickVariant, viewOf } from "../lib/variants";
 import { CATEGORIES } from "../config";
 import { useGeo, useShop, useToast } from "../store";
+import { lastShopUrl, navTrack } from "../lib/nav";
 
 export default function ProductDetail() {
   const { id } = useParams();
   const nav = useNavigate();
+  // Shop se aye the? To Back = browser back (usi pagination page + scroll par). Warna last shop URL.
+  const cameFromShop = useRef(navTrack.prev === "/shop").current;
+  const goBackToShop = (e) => {
+    if (cameFromShop) {
+      e.preventDefault();
+      nav(-1);
+    }
+  };
   const { fmt, country } = useGeo();
   const { products, loading, add } = useShop();
   const toast = useToast();
@@ -73,7 +82,11 @@ export default function ProductDetail() {
           <p className="mt-3 text-sm text-neutral-600">
             This product is not available in {country.name}.
           </p>
-          <Link to="/shop" className="btn-gold mt-6">
+          <Link
+            to={lastShopUrl()}
+            onClick={goBackToShop}
+            className="btn-gold mt-6"
+          >
             Back to shop
           </Link>
         </div>
@@ -101,7 +114,8 @@ export default function ProductDetail() {
   return (
     <div className="container-x py-10">
       <Link
-        to="/shop"
+        to={lastShopUrl()}
+        onClick={goBackToShop}
         className="inline-flex items-center gap-2 text-sm font-semibold text-gold-600 transition hover:gap-3 hover:text-royal"
       >
         <ArrowLeft size={16} /> Back to shop

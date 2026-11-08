@@ -3,7 +3,7 @@ import { COUNTRIES } from "../config";
 import { useGeo } from "../store";
 
 // Country dropdown: sirf admin (wjahattahir@gmail.com) ko dikhta hai.
-// Jo country chuno, poori website usi country ki (Pakistan = Apna Pani, USA = Mithai House) ban jati hai.
+// Jo country chuno, poori website usi country ki (Pakistan = Evelyn One, USA = Mithai House) ban jati hai.
 export default function CountrySwitch({ className = "" }) {
   const { country, canSwitch, setOverride } = useGeo();
   if (!canSwitch || !country) return null;

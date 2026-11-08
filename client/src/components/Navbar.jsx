@@ -97,7 +97,7 @@ export default function Navbar() {
         className={`border-b border-slate-200/80 bg-white transition-all duration-500 ${scrolled ? "shadow-lg shadow-slate-900/10" : "shadow-sm shadow-slate-900/5"}`}
       >
         <div
-          className={`container-x flex items-center justify-between gap-4 transition-all duration-500 ${scrolled ? (brand.key === "apnapani" ? "h-24" : "h-20") : brand.key === "apnapani" ? "h-28" : "h-24"}`}
+          className={`container-x flex items-center justify-between gap-4 transition-all duration-500 ${scrolled ? (brand.key === "evelynone" ? "h-16 sm:h-[4.5rem]" : "h-20") : brand.key === "evelynone" ? "h-[4.5rem] sm:h-20" : "h-24"}`}
         >
           <Logo />
 

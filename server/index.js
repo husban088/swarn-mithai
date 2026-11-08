@@ -40,7 +40,7 @@ if (!ready)
   );
 
 // Admin roles: har admin sirf apni country/brand ka data dekhta hai.
-//   Pakistan admin  -> sirf Apna Pani (aqua) products + PKR orders
+//   Pakistan admin  -> sirf Evelyn One (aqua) products + PKR orders
 //   USA admin       -> sirf Mithai House (sweets) products + USD orders
 // Badalne ke liye server/.env me PK_ADMIN_EMAILS / US_ADMIN_EMAILS likhein (comma separated).
 const list = (v) =>
@@ -54,7 +54,7 @@ const US_ADMINS = list(
 );
 const ADMINS = [...PK_ADMINS, ...US_ADMINS];
 const SCOPES = {
-  PK: { country: "PK", category: "aqua", brand: "Apna Pani" },
+  PK: { country: "PK", category: "aqua", brand: "Evelyn One" },
   US: { country: "US", category: "sweets", brand: "Mithai House" },
 };
 const adminScopeFor = (e) => {
@@ -66,6 +66,29 @@ const adminScopeFor = (e) => {
 const isAdminEmail = (e) => !!adminScopeFor(e);
 // Region ke admins (order / contact emails sirf unhi ko jayen)
 const adminsOf = (country) => (country === "PK" ? PK_ADMINS : US_ADMINS);
+
+// ---- Admin data isolation: Evelyn One admin ko sirf water (aqua) orders, Mithai House admin ko sirf mithai (sweets) ----
+// Order ke item ki category save hoti hai. Purane orders me na ho to naam se pehchante hain
+// (water ke lafz = aqua, baqi sab mithai), bilkul client/src/lib/invoice.js jaisa.
+const AQUA_WORDS =
+  /\b(water|pani|aqua|bottle|bottles|jar|refill|dispenser|litre|liter|ltr|mineral|apna|evelyn)\b|\b\d+(\.\d+)?\s?(l|ml|ltr)\b/i;
+const itemCat = (it) =>
+  it?.category === "sweets" || it?.category === "aqua"
+    ? it.category
+    : AQUA_WORDS.test(String(it?.name || ""))
+      ? "aqua"
+      : "sweets";
+// Order sirf tab admin ka hai jab uski country match kare AUR usme admin ki category ka koi item ho.
+// Mix order ho to doosri category ke items nikal diye jate hain (mithai ki detail water admin ko nahi dikhti).
+const scopeOrder = (o, sc) => {
+  if (!o || o.country !== sc.country) return null;
+  const items = Array.isArray(o.items) ? o.items : [];
+  const mine = items.filter((it) => itemCat(it) === sc.category);
+  if (!mine.length) return null;
+  return mine.length === items.length ? o : { ...o, items: mine };
+};
+const scopeOrders = (rows, sc) =>
+  (rows || []).map((o) => scopeOrder(o, sc)).filter(Boolean);
 
 // ---------- Mail ----------
 const mailer =
@@ -233,7 +256,7 @@ const normCountry = (c) =>
 const CATS = { US: ["sweets"], PK: ["sweets", "aqua"] };
 const CUR = { US: "USD", PK: "PKR" };
 
-// Pakistan me sirf Apna Pani (aqua) dikhta hai. Agar kisi email ko Pakistan me mithai bhi dikhani ho
+// Pakistan me sirf Evelyn One (aqua) dikhta hai. Agar kisi email ko Pakistan me mithai bhi dikhani ho
 // to server/.env me PK_MITHAI_EMAILS=a@x.com,b@y.com likhein (default: koi nahi).
 const PK_MITHAI = (process.env.PK_MITHAI_EMAILS || "")
   .split(",")
@@ -388,10 +411,17 @@ const cleanVariants = (arr, category) =>
       note: String(v?.note || "")
         .trim()
         .slice(0, 160),
-      image: /^https?:\/\//.test(String(v?.image || "").trim())
-        ? String(v.image).trim()
-        : "",
+      // Har option ki apni alag images (max 5). Purani single `image` bhi chalti hai.
+      images: (() => {
+        const list = (
+          Array.isArray(v?.images) && v.images.length ? v.images : [v?.image]
+        )
+          .map((u) => String(u || "").trim())
+          .filter((u) => /^https?:\/\//.test(u) && u.length < 500);
+        return [...new Set(list)].slice(0, 5);
+      })(),
     }))
+    .map((v) => ({ ...v, image: v.images[0] || "" }))
     .filter((v) => {
       if (!v.label) return false;
       const px = category === "sweets" ? v.price_usd : v.price_pkr;
@@ -438,6 +468,7 @@ const shape = (p, country, rate) => ({
             label: v.label,
             note: v.note,
             image: v.image,
+            images: v.images || [],
             price: vp.price,
             original_price: vp.original,
           }
@@ -465,7 +496,7 @@ const shape = (p, country, rate) => ({
   currency: CUR[country],
 });
 
-// ---------- Apna Pani 19 L "Refill" (PKR 200) ----------
+// ---------- Evelyn One 19 L "Refill" (PKR 200) ----------
 // Refill option sirf us logged-in customer ko dikhta / milta hai jis ka pehla 19 L ("First time", PKR 1,500)
 // order DELIVERED ho chuka ho. Owner jab tak order ko "delivered" na kare, kisi ko bhi Refill nahi dikhta.
 const GATED_VARIANT = "refill";
@@ -583,7 +614,7 @@ app.post(
     if (e2) return res.status(400).json({ error: e2.message });
     const user = userShape(data.user);
     const pk = normCountry(req.body?.country) === "PK";
-    const brandName = pk ? "Apna Pani" : "Mithai House";
+    const brandName = pk ? "Evelyn One" : "Mithai House";
     bg(
       sendMail(
         user.email,
@@ -591,7 +622,7 @@ app.post(
         wrapMail(
           `Welcome, ${esc(user.name)}!`,
           pk
-            ? "<p>Your account is ready. Order pure Apna Pani drinking water anytime.</p>"
+            ? "<p>Your account is ready. Order pure Evelyn One drinking water anytime.</p>"
             : "<p>Your account is ready. Browse our handcrafted mithai and place your first order anytime.</p>",
           brandName,
         ),
@@ -1225,7 +1256,7 @@ app.post(
         wrapMail(
           "New contact message",
           `<p><b>${esc(name)}</b> (${esc(email)})</p><p>${esc(message).replace(/\n/g, "<br>")}</p>`,
-          cc === "PK" ? "Apna Pani" : "Mithai House",
+          cc === "PK" ? "Evelyn One" : "Mithai House",
         ),
       );
     res.json({ ok: true });
@@ -1278,11 +1309,14 @@ app.get(
   requireAdmin,
   ah(async (req, res) => {
     const sc = req.user.adminScope;
-    const orders = await fetchAll(
-      "orders",
-      "id,status,total,currency,items,created_at",
-      true,
-      sc.country,
+    const orders = scopeOrders(
+      await fetchAll(
+        "orders",
+        "id,status,total,currency,items,created_at,country",
+        true,
+        sc.country,
+      ),
+      sc,
     );
     const { data: prods, error } = await db
       .from("products")
@@ -1326,11 +1360,9 @@ app.get(
   auth,
   requireAdmin,
   ah(async (req, res) => {
-    const orders = await fetchAll(
-      "orders",
-      "*",
-      true,
-      req.user.adminScope.country,
+    const orders = scopeOrders(
+      await fetchAll("orders", "*", true, req.user.adminScope.country),
+      req.user.adminScope,
     );
     res.set("Cache-Control", "no-store");
     res.json({ orders });
@@ -1364,9 +1396,9 @@ app.get(
       .eq("country", req.user.adminScope.country)
       .neq("payment_status", "awaiting")
       .order("created_at", { ascending: false })
-      .limit(500);
+      .limit(1000);
     if (error) throw error;
-    res.json({ orders: data });
+    res.json({ orders: scopeOrders(data, req.user.adminScope).slice(0, 500) });
   }),
 );
 
@@ -1380,12 +1412,14 @@ app.patch(
       return res.status(400).json({ error: "Invalid status." });
     const { data: ord, error: e0 } = await db
       .from("orders")
-      .select("id,email,status,customer,country")
+      .select("id,email,status,customer,country,items")
       .eq("id", req.params.id)
       .eq("country", req.user.adminScope.country)
       .maybeSingle();
     if (e0) throw e0;
-    if (!ord) return res.status(404).json({ error: "Order not found." });
+    // Doosre brand ka order (jaise water admin ke liye mithai order) edit nahi ho sakta
+    if (!ord || !scopeOrder(ord, req.user.adminScope))
+      return res.status(404).json({ error: "Order not found." });
     const { error } = await db
       .from("orders")
       .update({ status })
@@ -1399,7 +1433,7 @@ app.patch(
           wrapMail(
             "Order update",
             `<p>Hi ${esc(ord.customer?.name || "")}, your order <b>#${ord.id.slice(0, 8).toUpperCase()}</b> is now <b>${esc(status)}</b>.</p>`,
-            ord.country === "PK" ? "Apna Pani" : "Mithai House",
+            ord.country === "PK" ? "Evelyn One" : "Mithai House",
           ),
         ),
       );
@@ -1439,7 +1473,7 @@ if (require.main === module) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () =>
     console.log(
-      `Apna Pani + Mithai House server running on http://localhost:${PORT}`,
+      `Evelyn One + Mithai House server running on http://localhost:${PORT}`,
     ),
   );
 }

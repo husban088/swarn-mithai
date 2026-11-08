@@ -9,15 +9,15 @@ import { useGeo, useShop } from "../store";
 // Har category ke liye: apni image (client/public/hero/...) -> product image -> emoji
 const META = {
   aqua: {
-    img: "/hero/apna-pani-1.jpg",
+    img: "/hero/apna-pani-1.jpeg",
     dark: true,
-    kicker: "Apna Pani",
+    kicker: "Evelyn One",
     points: [
       "500 ml · 1.5 L · 19 L",
       "Multi-stage purified",
       "Pay on delivery",
     ],
-    cta: "Shop Apna Pani",
+    cta: "Shop Evelyn One",
   },
   sweets: {
     img: null,
@@ -79,7 +79,7 @@ function CatImage({ cands, emoji, dark }) {
   );
 }
 
-// "Apna Pani aur Mithai House" ke 2 luxury cards (pure white section)
+// "Evelyn One aur Mithai House" ke 2 luxury cards (pure white section)
 export default function CategoryCards({ sweets, aqua }) {
   const { country } = useGeo();
   const { products } = useShop();

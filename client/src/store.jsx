@@ -243,8 +243,8 @@ function GeoProvider({ children }) {
   }, [refresh]);
 
   // Pakistan me Mithai sirf allowed email (server decide karta hai: user.pkMithai) ko dikhti hai.
-  // Baqi sab ko Pakistan me sirf Apna Pani (water).
-  // Dropdown wala admin: Pakistan = sirf Apna Pani, USA = sirf Mithai House
+  // Baqi sab ko Pakistan me sirf Evelyn One (water).
+  // Dropdown wala admin: Pakistan = sirf Evelyn One, USA = sirf Mithai House
   const active = canSwitch && override ? override : code;
   const pkMithai = !!user?.pkMithai && !canSwitch;
   const country = useMemo(() => {
@@ -255,7 +255,7 @@ function GeoProvider({ children }) {
         ...base,
         categories: ["aqua"],
         tagline: "Pure Drinking Water",
-        bar: "Cash on delivery across Pakistan · Apna Pani pure drinking water",
+        bar: "Cash on delivery across Pakistan · Evelyn One pure drinking water",
       };
     return base;
   }, [active, pkMithai]);

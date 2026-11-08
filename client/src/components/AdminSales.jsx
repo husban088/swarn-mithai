@@ -5,12 +5,15 @@ import {
   FileText,
   Package,
   RefreshCw,
+  Search,
   ShoppingBag,
   TrendingUp,
   Wallet,
+  X,
 } from "lucide-react";
 import { api } from "../lib/api";
 import { fmtMoney, normStatus, shortId } from "../lib/format";
+import { orderMatches } from "../lib/orderSearch";
 import {
   downloadBulkInvoices,
   downloadInvoice,
@@ -329,6 +332,7 @@ export default function AdminSales() {
   const [metric, setMetric] = useState("sales");
   const [chartCur, setChartCur] = useState(scope.cur || "PKR");
   const [search, setSearch] = useState("");
+  const [invSearch, setInvSearch] = useState(""); // Orders & invoices table ki apni search
   const [limit, setLimit] = useState(25);
   const [busy, setBusy] = useState(""); // "" | "pdf" | "zip"
   const [prog, setProg] = useState("");
@@ -376,6 +380,7 @@ export default function AdminSales() {
     setCur("all");
     setStatusF("active");
     setSearch("");
+    setInvSearch("");
   };
 
   const filtered = useMemo(() => {
@@ -395,22 +400,20 @@ export default function AdminSales() {
         const day = ymd(d);
         if (from && day < from) return false;
         if (to && day > to) return false;
-        if (q) {
-          const hay = [
-            shortId(o.id),
-            o.customer?.name,
-            o.email,
-            o.customer?.phone,
-            o.customer?.city,
-          ]
-            .join(" ")
-            .toLowerCase();
-          if (!hay.includes(q)) return false;
-        }
+        if (q && !orderMatches(o, q)) return false;
         return true;
       })
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   }, [orders, statusF, cur, year, month, from, to, search]);
+
+  // Invoice search: jab likha ho to SAARE orders me dhoondta hai (date/status filter ignore),
+  // taake kisi bhi customer ki invoice foran mil jaye. Khali ho to upar wale filters wali list.
+  const invList = useMemo(() => {
+    if (!invSearch.trim()) return filtered;
+    return (orders || [])
+      .filter((o) => orderMatches(o, invSearch))
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  }, [orders, filtered, invSearch]);
 
   const summary = useMemo(() => {
     const s = {
@@ -716,7 +719,7 @@ export default function AdminSales() {
           <Field label="Search">
             <input
               className={sel}
-              placeholder="Name, email, phone, order #"
+              placeholder="Order #, customer name, email, phone"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -902,10 +905,41 @@ export default function AdminSales() {
             Orders & invoices
           </h3>
           <p className="text-xs text-neutral-500">
-            {filtered.length} orders · invoice PDF download karne ke liye button
+            {invList.length} orders · invoice PDF download karne ke liye button
             dabayein
           </p>
         </div>
+        <div className="relative mt-3 max-w-xl">
+          <Search
+            size={16}
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+          />
+          <input
+            type="text"
+            value={invSearch}
+            onChange={(e) => {
+              setInvSearch(e.target.value);
+              setLimit(25);
+            }}
+            placeholder="Search customer: order #, name, email or phone"
+            className="w-full rounded-full border border-gold-200 bg-white py-2.5 pl-10 pr-10 text-sm outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-200"
+          />
+          {invSearch && (
+            <button
+              type="button"
+              onClick={() => setInvSearch("")}
+              aria-label="Clear search"
+              className="absolute right-3 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-full text-neutral-500 transition hover:bg-gold-50"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        {invSearch.trim() && (
+          <p className="mt-2 text-xs text-neutral-500">
+            Search saare orders me ho rahi hai (date/status filter ke baghair).
+          </p>
+        )}
         <div className="mt-3 overflow-x-auto rounded-3xl border border-gold-200">
           <table className="w-full min-w-[820px] text-left text-sm">
             <thead className="bg-gold-50 text-xs text-royal">
@@ -919,7 +953,7 @@ export default function AdminSales() {
               </tr>
             </thead>
             <tbody>
-              {filtered.slice(0, limit).map((o) => {
+              {invList.slice(0, limit).map((o) => {
                 const st = normStatus(o.status);
                 const d = new Date(o.created_at);
                 return (
@@ -950,7 +984,7 @@ export default function AdminSales() {
                     </td>
                     <td className="p-4 text-xs">
                       {(o.items || []).map((i) => (
-                        <div key={i.id}>
+                        <div key={`${i.id}~${i.variant || ""}`}>
                           {i.name} × {i.qty}
                         </div>
                       ))}
@@ -976,7 +1010,7 @@ export default function AdminSales() {
                   </tr>
                 );
               })}
-              {!filtered.length && (
+              {!invList.length && (
                 <tr>
                   <td colSpan="6" className="p-8 text-center text-neutral-500">
                     Koi order nahi mila.
@@ -986,13 +1020,13 @@ export default function AdminSales() {
             </tbody>
           </table>
         </div>
-        {filtered.length > limit && (
+        {invList.length > limit && (
           <div className="mt-4 text-center">
             <button
               onClick={() => setLimit((l) => l + 25)}
               className="rounded-full border border-gold-200 px-6 py-2.5 text-sm font-semibold text-royal transition hover:bg-gold-50"
             >
-              Show more ({filtered.length - limit} remaining)
+              Show more ({invList.length - limit} remaining)
             </button>
           </div>
         )}

@@ -4,6 +4,9 @@ export const API_BASE = String(import.meta.env.VITE_API_URL || "").replace(
   /\/+$/,
   "",
 );
+import { clearAdminView, getAdminView, setAdminView } from "./adminView";
+import { COUNTRY_SWITCH_EMAILS } from "../config";
+
 const KEY = "swarn_session";
 export const getSession = () => {
   try {
@@ -12,8 +15,19 @@ export const getSession = () => {
     return null;
   }
 };
-export const setSession = (s) => localStorage.setItem(KEY, JSON.stringify(s));
-export const clearSession = () => localStorage.removeItem(KEY);
+export const setSession = (s) => {
+  localStorage.setItem(KEY, JSON.stringify(s));
+  // Dusra user login ho to purana "region admin" session hata do
+  if (
+    getAdminView() &&
+    !COUNTRY_SWITCH_EMAILS.includes(String(s?.user?.email || "").toLowerCase())
+  )
+    clearAdminView();
+};
+export const clearSession = () => {
+  localStorage.removeItem(KEY);
+  clearAdminView();
+};
 export const json = (method, body) => ({ method, body: JSON.stringify(body) });
 
 async function raw(path, opts = {}, token) {
@@ -43,7 +57,31 @@ async function raw(path, opts = {}, token) {
   return data;
 }
 
+// Super admin ne dusre region ka admin login kiya ho to "/admin..." calls us admin ke token se jati hain
+async function viewCall(path, opts, view) {
+  try {
+    return await raw(path, opts, view.token);
+  } catch (e) {
+    if (e.status === 401 && view.refresh) {
+      try {
+        const r = await raw(
+          "/auth/refresh",
+          json("POST", { refresh_token: view.refresh }),
+        );
+        const nv = { ...view, token: r.token, refresh: r.refresh };
+        setAdminView(nv);
+        return await raw(path, opts, nv.token);
+      } catch {
+        clearAdminView();
+      }
+    }
+    throw e;
+  }
+}
+
 export async function api(path, opts = {}) {
+  const view = path.startsWith("/admin") ? getAdminView() : null;
+  if (view?.token) return viewCall(path, opts, view);
   let s = getSession();
   try {
     return await raw(path, opts, s?.token);

@@ -8,7 +8,12 @@ import { Mark } from "./Logo";
 export default function Thumb({ p, className = "", w = 900, zoom = true }) {
   const [bad, setBad] = useState(false);
   const aqua = p.category === "aqua";
-  const src = imagesOf(p)[0];
+  // Options wale product ki base image na ho to pehle option ki image
+  const src =
+    imagesOf(p)[0] ||
+    (Array.isArray(p.variants)
+      ? p.variants.map((v) => v?.images?.[0] || v?.image).find(Boolean)
+      : undefined);
   if (src && !bad) {
     return (
       <FitImage
@@ -27,7 +32,16 @@ export default function Thumb({ p, className = "", w = 900, zoom = true }) {
     >
       <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 animate-glow rounded-full bg-champ-400/30 blur-2xl" />
       <div className="relative transition duration-700 group-hover:rotate-[8deg] group-hover:scale-110">
-        <Mark size={64} drop={aqua} />
+        {aqua ? (
+          <img
+            src="/brand/evelyn-one-mark.svg"
+            alt=""
+            className="h-20 w-20 select-none object-contain"
+            draggable="false"
+          />
+        ) : (
+          <Mark size={64} />
+        )}
       </div>
     </div>
   );

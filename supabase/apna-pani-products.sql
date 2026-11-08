@@ -1,4 +1,4 @@
--- Apna Pani: sirf 4 products (19 L, 1.5 L, 0.5 L, 300 ml)
+-- Evelyn One: sirf 4 products (19 L, 1.5 L, 0.5 L, 300 ml)
 -- Supabase Dashboard -> SQL Editor -> New query -> paste -> Run (ek hi dafa)
 
 -- 1) Products me variants (Pure / Mix / Custom, ya First time / Refill) ka column
@@ -12,7 +12,7 @@ delete from public.products where category = 'aqua';
 insert into public.products (name, description, category, price_usd, price_pkr, unit, featured, in_stock, variants)
 values
 (
-  'Apna Pani 19 L',
+  'Evelyn One 19 L',
   'First time PKR 1,500 (bottle with security deposit included). After that, refill / pure bottle only PKR 200.',
   'aqua', null, 1500, '', true, true,
   '[
@@ -21,7 +21,7 @@ values
   ]'::jsonb
 ),
 (
-  'Apna Pani 1.5 L',
+  'Evelyn One 1.5 L',
   'Pure PKR 380 and Mix PKR 350. Customize bottle available: minimum order 50 PET bottles.',
   'aqua', null, 380, '', true, true,
   '[
@@ -31,7 +31,7 @@ values
   ]'::jsonb
 ),
 (
-  'Apna Pani 0.5 L',
+  'Evelyn One 0.5 L',
   'Pure PKR 400 and Mix PKR 370. Customize bottle available: minimum order 50 PET bottles.',
   'aqua', null, 400, '', false, true,
   '[
@@ -41,7 +41,7 @@ values
   ]'::jsonb
 ),
 (
-  'Apna Pani 300 ml',
+  'Evelyn One 300 ml',
   'Pure PKR 400 and Mix PKR 370. Customize bottle available: minimum order 50 PET bottles.',
   'aqua', null, 400, '', false, true,
   '[

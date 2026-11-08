@@ -39,15 +39,50 @@ export default function Shop() {
   const [params, setParams] = useSearchParams();
   const urlQ = params.get("q") || "";
   const [q, setQ] = useState(urlQ);
-  const [sort, setSort] = useState("new");
-  const [minP, setMinP] = useState("");
-  const [maxP, setMaxP] = useState("");
-  const [bestOnly, setBestOnly] = useState(false);
-  const [stockOnly, setStockOnly] = useState(false);
-  const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const gridRef = useRef(null);
-  const firstRender = useRef(true);
+
+  // Page number + saare filters URL me rehte hain (?page=2&sort=low ...).
+  // Is liye product detail se Back karne par browser wahi URL wapis kholta hai
+  // aur aap usi pagination page par ate ho.
+  const sort = params.get("sort") || "new";
+  const minP = params.get("min") || "";
+  const maxP = params.get("max") || "";
+  const bestOnly = params.get("best") === "1";
+  const stockOnly = params.get("stock") === "1";
+  const page = Math.max(1, parseInt(params.get("page"), 10) || 1);
+
+  // URL params badalne ka ek hi tareeqa. replace:true => history me extra entry nahi banti,
+  // is liye Back dabane par seedha product se pehle wale shop page par ate ho.
+  // Filter badle to page 1 par wapis (keepPage = false), page badle to keepPage = true.
+  const update = (changes, keepPage = false) => {
+    const n = new URLSearchParams(params);
+    Object.entries(changes).forEach(([k, v]) => {
+      if (v === "" || v == null || v === false) n.delete(k);
+      else n.set(k, String(v));
+    });
+    if (!keepPage) n.delete("page");
+    setParams(n, { replace: true });
+  };
+  const setSort = (v) => update({ sort: v === "new" ? "" : v });
+  const setMinP = (v) => update({ min: v });
+  const setMaxP = (v) => update({ max: v });
+  const setBestOnly = (v) => update({ best: v ? "1" : "" });
+  const setStockOnly = (v) => update({ stock: v ? "1" : "" });
+  const onSearch = (v) => {
+    setQ(v);
+    update({ q: v });
+  };
+
+  // Product detail ka "Back to shop" button isi URL par wapis bhejta hai
+  useEffect(() => {
+    try {
+      const qs = params.toString();
+      sessionStorage.setItem("swarn:shopUrl", "/shop" + (qs ? "?" + qs : ""));
+    } catch {
+      /* private mode: ignore */
+    }
+  }, [params]);
 
   // URL ka ?q= badle (jaise Home ki varieties) to search bar bhi badle
   useEffect(() => {
@@ -61,6 +96,7 @@ export default function Shop() {
     const n = new URLSearchParams(params);
     if (c === "all") n.delete("cat");
     else n.set("cat", c);
+    n.delete("page"); // category badle to page 1 se shuru
     setParams(n);
   };
   const showEvent = cat !== "aqua";
@@ -96,28 +132,23 @@ export default function Shop() {
     return l;
   }, [inCat, q, sort, minP, maxP, bestOnly, stockOnly]);
 
-  // Koi bhi filter badle to page 1 par wapis
-  useEffect(() => {
-    setPage(1);
-  }, [cat, q, sort, minP, maxP, bestOnly, stockOnly]);
-
   const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
   const cur = Math.min(page, totalPages);
   const from = (cur - 1) * PAGE_SIZE;
   const view = list.slice(from, from + PAGE_SIZE);
 
-  // Page badalne par grid ke shuru par scroll
-  useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
-    const el = gridRef.current;
-    if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - 110;
-      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
-    }
-  }, [cur]);
+  // Pagination button dabane par page badlo aur grid ke shuru par scroll karo
+  // (sirf button click par; Back se wapis ane par scroll App.jsx wapis set karta hai)
+  const goPage = (n) => {
+    update({ page: n <= 1 ? "" : n }, true);
+    requestAnimationFrame(() => {
+      const el = gridRef.current;
+      if (el) {
+        const y = el.getBoundingClientRect().top + window.scrollY - 110;
+        window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+      }
+    });
+  };
 
   const activeCount =
     (q.trim() ? 1 : 0) +
@@ -127,16 +158,11 @@ export default function Shop() {
     (sort !== "new" ? 1 : 0);
   const reset = () => {
     setQ("");
-    setSort("new");
-    setMinP("");
-    setMaxP("");
-    setBestOnly(false);
-    setStockOnly(false);
-    if (params.get("q")) {
-      const n = new URLSearchParams(params);
-      n.delete("q");
-      setParams(n);
-    }
+    const n = new URLSearchParams(params);
+    ["q", "sort", "min", "max", "best", "stock", "page"].forEach((k) =>
+      n.delete(k),
+    );
+    setParams(n, { replace: true });
   };
 
   const tab = (key, label, on) => (
@@ -215,14 +241,14 @@ export default function Shop() {
               />
               <input
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
+                onChange={(e) => onSearch(e.target.value)}
                 placeholder="Search products"
                 className="field !pl-11 !pr-10 sm:w-64"
               />
               {q && (
                 <button
                   type="button"
-                  onClick={() => setQ("")}
+                  onClick={() => onSearch("")}
                   aria-label="Clear search"
                   className="absolute right-3 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-full text-neutral-400 transition hover:bg-gold-50 hover:text-gold-600"
                 >
@@ -376,7 +402,7 @@ export default function Shop() {
           >
             <button
               type="button"
-              onClick={() => setPage(cur - 1)}
+              onClick={() => goPage(cur - 1)}
               disabled={cur === 1}
               aria-label="Previous page"
               className={`${pageBtn} border-gold-200 bg-white text-neutral-700 hover:-translate-y-0.5 hover:border-gold-500 hover:bg-gold-500 hover:text-white disabled:pointer-events-none disabled:opacity-40`}
@@ -392,7 +418,7 @@ export default function Shop() {
                 <button
                   key={n}
                   type="button"
-                  onClick={() => setPage(n)}
+                  onClick={() => goPage(n)}
                   aria-label={`Page ${n}`}
                   aria-current={n === cur ? "page" : undefined}
                   className={`${pageBtn} ${n === cur ? "border-transparent bg-gold-500 text-white shadow-lg shadow-gold-400/40" : "border-gold-200 bg-white text-neutral-700 hover:-translate-y-0.5 hover:border-gold-500 hover:text-gold-600"}`}
@@ -403,7 +429,7 @@ export default function Shop() {
             )}
             <button
               type="button"
-              onClick={() => setPage(cur + 1)}
+              onClick={() => goPage(cur + 1)}
               disabled={cur === totalPages}
               aria-label="Next page"
               className={`${pageBtn} border-gold-200 bg-white text-neutral-700 hover:-translate-y-0.5 hover:border-gold-500 hover:bg-gold-500 hover:text-white disabled:pointer-events-none disabled:opacity-40`}

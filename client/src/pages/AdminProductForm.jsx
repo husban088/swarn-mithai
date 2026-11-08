@@ -26,6 +26,7 @@ import { useAdminScope } from "../lib/adminScope";
 
 const MAX_IMAGES = 8;
 const RECOMMENDED_IMAGES = 5;
+const VAR_MAX_IMAGES = 5; // har option / box ki max images
 
 const EMPTY = {
   name: "",
@@ -44,7 +45,12 @@ const EMPTY = {
 
 // Naye mithai product me 2 box options khud bhar jate hain (config.js -> SHOP_INFO.boxes): Signature $12 + Special Box $20
 const defaultBoxes = () =>
-  SHOP_INFO.boxes.map((b) => ({ ...b, price_pkr: "", image: "" }));
+  SHOP_INFO.boxes.map((b) => ({
+    ...b,
+    price_pkr: "",
+    image: "",
+    images: [],
+  }));
 
 function Section({ icon: Icon, title, hint, children, delay = 0 }) {
   return (
@@ -95,6 +101,8 @@ export default function AdminProductForm() {
   const [drag, setDrag] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const [vUp, setVUp] = useState(false);
+  const [pvI, setPvI] = useState(0); // live preview me kaun sa option dikh raha hai
+  const [pvK, setPvK] = useState(0); // us option ki kaun si image
 
   fRef.current = f;
   const aqua = f.category === "aqua";
@@ -129,7 +137,17 @@ export default function AdminProductForm() {
             video_url: p.video_url || "",
             price_usd: p.price_usd ?? "",
             price_pkr: p.price_pkr ?? "",
-            variants: Array.isArray(p.variants) ? p.variants : [],
+            variants: Array.isArray(p.variants)
+              ? p.variants.map((v) => ({
+                  ...v,
+                  images:
+                    Array.isArray(v.images) && v.images.length
+                      ? v.images
+                      : v.image
+                        ? [v.image]
+                        : [],
+                }))
+              : [],
           });
       } catch (e) {
         toast(e.message, "err");
@@ -238,6 +256,7 @@ export default function AdminProductForm() {
           price_usd: "",
           note: "",
           image: "",
+          images: [],
         },
       ].slice(0, 6),
     }));
@@ -246,20 +265,49 @@ export default function AdminProductForm() {
       ...s,
       variants: (s.variants || []).filter((_, k) => k !== i),
     }));
-  const uploadVarImg = async (i, file) => {
-    if (!file) return;
-    if (!/^image\//.test(file.type)) return toast("Only image files", "err");
+  // Har option ki images list (purani single image bhi shamil)
+  const varImgs = (v) =>
+    Array.isArray(v?.images) && v.images.length
+      ? v.images
+      : v?.image
+        ? [v.image]
+        : [];
+  const setVarImgs = (i, fn) =>
+    setF((s) => ({
+      ...s,
+      variants: (s.variants || []).map((v, k) => {
+        if (k !== i) return v;
+        const images = fn(varImgs(v)).slice(0, VAR_MAX_IMAGES);
+        return { ...v, images, image: images[0] || "" };
+      }),
+    }));
+  const uploadVarImgs = async (i, fileList) => {
+    const files = [...(fileList || [])];
+    if (!files.length) return;
     setVImgUp(i);
-    try {
-      const r = await uploadDirect(file, { signPath: "/admin/upload-sign" });
-      setVar(i, { image: r.url });
-      toast("Option image uploaded");
-    } catch (err) {
-      toast(err.message, "err");
-    } finally {
-      setVImgUp(-1);
+    for (const file of files) {
+      if (!/^image\//.test(file.type)) {
+        toast("Only image files", "err");
+        continue;
+      }
+      if (varImgs(fRef.current.variants?.[i]).length >= VAR_MAX_IMAGES) {
+        toast(`Har option ki max ${VAR_MAX_IMAGES} images`, "err");
+        break;
+      }
+      try {
+        const r = await uploadDirect(file, { signPath: "/admin/upload-sign" });
+        setVarImgs(i, (l) => (l.includes(r.url) ? l : [...l, r.url]));
+        toast("Option image uploaded");
+      } catch (err) {
+        toast(err.message, "err");
+      }
     }
+    setVImgUp(-1);
   };
+  const removeVarImg = (i, idx) =>
+    setVarImgs(i, (l) => l.filter((_, k) => k !== idx));
+  const coverVarImg = (i, idx) =>
+    setVarImgs(i, (l) => [l[idx], ...l.filter((_, k) => k !== idx)]);
   // key label se banti hai (pure, mix, first-time ...), duplicate na ho
   const cleanVars = () => {
     const used = new Set();
@@ -278,8 +326,11 @@ export default function AdminProductForm() {
           `opt${i + 1}`;
         while (used.has(k)) k += "x";
         used.add(k);
+        const imgs = varImgs(v);
         return {
           ...v,
+          images: imgs,
+          image: imgs[0] || "",
           key: k,
           price_pkr:
             v.price_pkr === "" || v.price_pkr == null
@@ -306,6 +357,10 @@ export default function AdminProductForm() {
         `Har option ki valid ${aqua ? "PKR" : "USD"} price likhein`,
         "err",
       );
+    // Options hon to product ki base images = pehle option ki images (cart / fallback ke liye)
+    const baseImgs = variants.length
+      ? variants.find((v) => v.images?.length)?.images || f.images || []
+      : f.images || [];
     setBusy(true);
     try {
       await api(
@@ -315,7 +370,8 @@ export default function AdminProductForm() {
           variants,
           price_usd:
             !aqua && variants.length ? variants[0].price_usd : f.price_usd,
-          image_url: f.images?.[0] || "",
+          images: baseImgs,
+          image_url: baseImgs[0] || "",
         }),
       );
       toast(editing ? "Product updated" : "Product added");
@@ -338,6 +394,14 @@ export default function AdminProductForm() {
       toast(err.message, "err");
     }
   };
+
+  // Live preview: chuna hua option, uski images aur price
+  const pvVars = f.variants || [];
+  const pv = pvVars[Math.min(pvI, Math.max(0, pvVars.length - 1))] || null;
+  const pvImgs = pv && varImgs(pv).length ? varImgs(pv) : f.images || [];
+  const pvShow = pvImgs[Math.min(pvK, Math.max(0, pvImgs.length - 1))];
+  const pvPkr = pv ? pv.price_pkr : f.price_pkr;
+  const pvUsd = pv ? pv.price_usd : f.price_usd;
 
   if (loading) {
     return (
@@ -471,7 +535,7 @@ export default function AdminProductForm() {
             title="Pricing"
             hint={
               aqua
-                ? "Apna Pani: sirf PKR price likhein"
+                ? "Evelyn One: sirf PKR price likhein"
                 : "Mithai House: sirf USD price likhein"
             }
             delay={80}
@@ -541,8 +605,8 @@ export default function AdminProductForm() {
                     </span>
                     <p className="text-xs text-neutral-500">
                       {aqua
-                        ? "Har option ki apni price + image. Card par image ke neeche chips dikhte hain, jo chuna jaye uski image aur price dikhti hai."
-                        : "Har box ki apni price + image. Card par image ke neeche 2 buttons dikhte hain; jo chuna jaye uski image aur price dikhti hai. Special Box ki image upload na karein to default gift-box image lagti hai."}
+                        ? "Har option ki apni price + alag images (5 tak). Card par image ke neeche chips dikhte hain, jo chuna jaye uski image aur price dikhti hai."
+                        : "Har box ki apni price + alag images (5 tak, Signature aur Special Box ki alag alag). Card par image ke neeche 2 buttons dikhte hain; jo chuna jaye uski image aur price dikhti hai. Special Box ki image upload na karein to default gift-box image lagti hai."}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -615,32 +679,6 @@ export default function AdminProductForm() {
                           }
                         />
                       </div>
-                      <label className="relative grid h-24 cursor-pointer place-items-center overflow-hidden rounded-2xl border border-dashed border-champ-300 bg-white text-center text-[11px] font-semibold text-neutral-500 transition hover:border-gold-500 hover:bg-gold-50">
-                        {v.image ? (
-                          <img
-                            src={cld(v.image, "f_auto,q_auto,w_300")}
-                            alt={v.label}
-                            className="h-full w-full object-contain"
-                          />
-                        ) : vImgUp === i ? (
-                          "Uploading…"
-                        ) : (v.key === "special-box" ||
-                            /special/i.test(v.label || "")) &&
-                          !aqua ? (
-                          "Default box image\n(click to upload yours)"
-                        ) : (
-                          "Option image\n(click to upload)"
-                        )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            uploadVarImg(i, e.target.files?.[0]);
-                            e.target.value = "";
-                          }}
-                        />
-                      </label>
                       <button
                         type="button"
                         onClick={() => delVar(i)}
@@ -649,6 +687,79 @@ export default function AdminProductForm() {
                       >
                         <Trash2 size={15} />
                       </button>
+                      <div className="sm:col-span-2">
+                        <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-neutral-500">
+                          <span>
+                            {v.label || "Option"} ki images ({varImgs(v).length}
+                            /{VAR_MAX_IMAGES}) · pehli image cover
+                          </span>
+                          {vImgUp === i && (
+                            <span className="text-gold-600">Uploading…</span>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                          {varImgs(v).map((u, idx) => (
+                            <div
+                              key={u}
+                              className="group/vi relative aspect-square overflow-hidden rounded-xl border border-champ-200 bg-white"
+                            >
+                              <img
+                                src={cld(u, "f_auto,q_auto,w_300")}
+                                alt=""
+                                className="h-full w-full object-contain"
+                              />
+                              {idx === 0 && (
+                                <span className="absolute left-1 top-1 rounded-full bg-[#060607]/80 px-2 py-0.5 text-[9px] font-bold text-white">
+                                  Cover
+                                </span>
+                              )}
+                              <div className="absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-gradient-to-t from-black/70 to-transparent p-1 opacity-100 sm:opacity-0 sm:transition sm:group-hover/vi:opacity-100">
+                                {idx !== 0 ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => coverVarImg(i, idx)}
+                                    className="rounded-full bg-white/90 px-2 py-0.5 text-[9px] font-bold text-royal"
+                                  >
+                                    Cover
+                                  </button>
+                                ) : (
+                                  <span />
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => removeVarImg(i, idx)}
+                                  aria-label="Remove image"
+                                  className="grid h-5 w-5 place-items-center rounded-full bg-red-600 text-white"
+                                >
+                                  <Trash2 size={11} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                          {varImgs(v).length < VAR_MAX_IMAGES && (
+                            <label className="grid aspect-square cursor-pointer whitespace-pre-line place-items-center rounded-xl border border-dashed border-champ-300 bg-white p-1 text-center text-[10px] font-semibold text-neutral-500 transition hover:border-gold-500 hover:bg-gold-50">
+                              {vImgUp === i
+                                ? "Uploading…"
+                                : (v.key === "special-box" ||
+                                      /special/i.test(v.label || "")) &&
+                                    !aqua &&
+                                    !varImgs(v).length
+                                  ? "+ Add images\n(default box image\nlagti hai)"
+                                  : "+ Add images\n(multiple select)"}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => {
+                                  uploadVarImgs(i, e.target.files);
+                                  e.target.value = "";
+                                }}
+                              />
+                            </label>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
                   {!(f.variants || []).length && (
@@ -663,119 +774,131 @@ export default function AdminProductForm() {
             }
           </Section>
 
-          <Section
-            icon={ImagePlus}
-            title="Images"
-            hint={`Har product ki ${RECOMMENDED_IMAGES} HD images lagayein · pehli image cover hogi · poori image dikhti hai, stretch nahi hoti (max ${MAX_IMAGES})`}
-            delay={140}
-          >
-            <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDrag(true);
-              }}
-              onDragLeave={() => setDrag(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDrag(false);
-                uploadFiles(e.dataTransfer.files);
-              }}
-              className={`flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed p-6 text-center transition duration-300 ${drag ? "scale-[1.01] border-gold-500 bg-gold-50" : "border-gold-200 hover:border-champ-400 hover:bg-gold-50/50"}`}
+          {pvVars.length === 0 ? (
+            <Section
+              icon={ImagePlus}
+              title="Images"
+              hint={`Har product ki ${RECOMMENDED_IMAGES} HD images lagayein · pehli image cover hogi · poori image dikhti hai, stretch nahi hoti (max ${MAX_IMAGES})`}
+              delay={140}
             >
-              <span className="grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-[#060607] to-gold-600 text-white">
-                <UploadCloud size={24} className={up ? "animate-bounce" : ""} />
-              </span>
-              <p className="text-sm text-neutral-600">
-                Images yahan drag karein ya
-              </p>
-              <p
-                className={`rounded-full px-3 py-1 text-xs font-bold ${f.images.length >= RECOMMENDED_IMAGES ? "bg-champ-100 text-champ-600" : "bg-amber-50 text-amber-700"}`}
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDrag(true);
+                }}
+                onDragLeave={() => setDrag(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDrag(false);
+                  uploadFiles(e.dataTransfer.files);
+                }}
+                className={`flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed p-6 text-center transition duration-300 ${drag ? "scale-[1.01] border-gold-500 bg-gold-50" : "border-gold-200 hover:border-champ-400 hover:bg-gold-50/50"}`}
               >
-                {f.images.length}/{RECOMMENDED_IMAGES} recommended images
-              </p>
-              <label className="btn-line cursor-pointer !py-2.5">
-                <ImagePlus size={16} />
-                {up ? "Uploading…" : "Choose images"}
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => uploadFiles(e.target.files)}
-                  disabled={up}
-                />
-              </label>
-            </div>
+                <span className="grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-[#060607] to-gold-600 text-white">
+                  <UploadCloud
+                    size={24}
+                    className={up ? "animate-bounce" : ""}
+                  />
+                </span>
+                <p className="text-sm text-neutral-600">
+                  Images yahan drag karein ya
+                </p>
+                <p
+                  className={`rounded-full px-3 py-1 text-xs font-bold ${f.images.length >= RECOMMENDED_IMAGES ? "bg-champ-100 text-champ-600" : "bg-amber-50 text-amber-700"}`}
+                >
+                  {f.images.length}/{RECOMMENDED_IMAGES} recommended images
+                </p>
+                <label className="btn-line cursor-pointer !py-2.5">
+                  <ImagePlus size={16} />
+                  {up ? "Uploading…" : "Choose images"}
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => uploadFiles(e.target.files)}
+                    disabled={up}
+                  />
+                </label>
+              </div>
 
-            {(f.images.length > 0 || up) && (
-              <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
-                {f.images.map((u, idx) => (
-                  <div
-                    key={u + idx}
-                    className="group relative aspect-square animate-pop overflow-hidden rounded-2xl border border-gold-100 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
-                  >
-                    <img
-                      src={cld(u, "f_auto,q_auto,w_300,h_300,c_fill")}
-                      alt=""
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                    />
-                    {idx === 0 ? (
-                      <span className="absolute left-1.5 top-1.5 rounded-full champ-bg px-2 py-0.5 text-[10px] font-bold text-royal shadow">
-                        Cover
-                      </span>
-                    ) : (
+              {(f.images.length > 0 || up) && (
+                <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
+                  {f.images.map((u, idx) => (
+                    <div
+                      key={u + idx}
+                      className="group relative aspect-square animate-pop overflow-hidden rounded-2xl border border-gold-100 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                    >
+                      <img
+                        src={cld(u, "f_auto,q_auto,w_300,h_300,c_fill")}
+                        alt=""
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                      />
+                      {idx === 0 ? (
+                        <span className="absolute left-1.5 top-1.5 rounded-full champ-bg px-2 py-0.5 text-[10px] font-bold text-royal shadow">
+                          Cover
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => makeCover(idx)}
+                          title="Make cover"
+                          aria-label="Make cover"
+                          className="absolute left-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-[#060607]/80 text-white transition hover:scale-110 hover:bg-gold-600 sm:opacity-0 sm:group-hover:opacity-100"
+                        >
+                          <Star size={13} />
+                        </button>
+                      )}
                       <button
                         type="button"
-                        onClick={() => makeCover(idx)}
-                        title="Make cover"
-                        aria-label="Make cover"
-                        className="absolute left-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-[#060607]/80 text-white transition hover:scale-110 hover:bg-gold-600 sm:opacity-0 sm:group-hover:opacity-100"
+                        onClick={() => removeImg(idx)}
+                        title="Remove"
+                        aria-label="Remove image"
+                        className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-[#060607]/80 text-white transition hover:scale-110 hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100"
                       >
-                        <Star size={13} />
+                        <X size={14} />
                       </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeImg(idx)}
-                      title="Remove"
-                      aria-label="Remove image"
-                      className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-[#060607]/80 text-white transition hover:scale-110 hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
-                {up && (
-                  <div className="grid aspect-square place-items-center rounded-2xl border border-dashed border-gold-300 bg-gold-50">
-                    <div className="ring-loader ring-loader-sm" />
-                  </div>
-                )}
-              </div>
-            )}
+                    </div>
+                  ))}
+                  {up && (
+                    <div className="grid aspect-square place-items-center rounded-2xl border border-dashed border-gold-300 bg-gold-50">
+                      <div className="ring-loader ring-loader-sm" />
+                    </div>
+                  )}
+                </div>
+              )}
 
-            <div className="mt-4 flex gap-2">
-              <input
-                className="field"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addUrl();
-                  }
-                }}
-                placeholder="or paste image URL"
-              />
-              <button
-                type="button"
-                onClick={addUrl}
-                className="btn-line shrink-0 !py-2.5"
-              >
-                Add
-              </button>
+              <div className="mt-4 flex gap-2">
+                <input
+                  className="field"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addUrl();
+                    }
+                  }}
+                  placeholder="or paste image URL"
+                />
+                <button
+                  type="button"
+                  onClick={addUrl}
+                  className="btn-line shrink-0 !py-2.5"
+                >
+                  Add
+                </button>
+              </div>
+            </Section>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-gold-200 bg-gold-50/50 p-5 text-sm text-neutral-600">
+              <b className="text-royal">Images:</b> is product me options hain,
+              isliye images har option ke andar (upar Options / Boxes me) add
+              hoti hain. Right side preview me option chuna kar har option ki
+              images dekh sakte hain.
             </div>
-          </Section>
+          )}
 
           <Section
             icon={Video}
@@ -861,7 +984,16 @@ export default function AdminProductForm() {
                 <Sparkles size={14} /> Live preview
               </div>
               <div className="group relative aspect-[4/3] overflow-hidden bg-gold-50">
-                <Thumb p={{ ...f, name: f.name || "preview" }} />
+                <Thumb
+                  key={pvShow || "none"}
+                  p={{
+                    ...f,
+                    variants: [],
+                    images: pvShow ? [pvShow] : [],
+                    image_url: pvShow || "",
+                    name: f.name || "preview",
+                  }}
+                />
                 {f.featured && (
                   <span className="absolute left-3 top-3 rounded-full champ-bg px-3 py-1 text-[11px] font-bold text-royal shadow">
                     Bestseller
@@ -878,6 +1010,64 @@ export default function AdminProductForm() {
                   </div>
                 )}
               </div>
+              {pvVars.some((v) => v.label) && (
+                <div className="flex gap-2 overflow-x-auto border-b border-gold-100 bg-white px-4 py-3">
+                  {pvVars.map((v, i) => {
+                    const im = varImgs(v)[0];
+                    const on = pv === v;
+                    return (
+                      <button
+                        type="button"
+                        key={i}
+                        onClick={() => {
+                          setPvI(i);
+                          setPvK(0);
+                        }}
+                        className={`flex shrink-0 items-center gap-2 rounded-2xl border p-1.5 pr-3 text-left text-xs font-semibold transition ${on ? "border-gold-500 bg-gold-50 text-royal shadow" : "border-gold-200 text-neutral-600 hover:bg-gold-50"}`}
+                      >
+                        <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-xl bg-white">
+                          {im ? (
+                            <img
+                              src={cld(im, "f_auto,q_auto,w_120")}
+                              alt=""
+                              className="h-full w-full object-contain"
+                            />
+                          ) : (
+                            <span className="text-[9px] text-neutral-400">
+                              No img
+                            </span>
+                          )}
+                        </span>
+                        <span>
+                          <span className="block">{v.label || "Option"}</span>
+                          <span className="block text-[10px] font-normal text-neutral-500">
+                            {varImgs(v).length} image
+                            {varImgs(v).length === 1 ? "" : "s"}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {pvImgs.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto border-b border-gold-100 bg-white px-4 py-3">
+                  {pvImgs.map((u, k) => (
+                    <button
+                      type="button"
+                      key={u}
+                      onClick={() => setPvK(k)}
+                      className={`h-12 w-12 shrink-0 overflow-hidden rounded-xl border bg-white transition ${pvShow === u ? "border-gold-500 shadow ring-2 ring-gold-200" : "border-gold-200 opacity-80 hover:opacity-100"}`}
+                    >
+                      <img
+                        src={cld(u, "f_auto,q_auto,w_120")}
+                        alt=""
+                        className="h-full w-full object-contain"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="p-5">
                 <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold-600">
                   {CATEGORIES[f.category]?.label}
@@ -892,8 +1082,8 @@ export default function AdminProductForm() {
                   <div>
                     <div className="text-xl font-extrabold text-royal">
                       {aqua
-                        ? fmtMoney(f.price_pkr || 0, "PKR")
-                        : `≈ ${fmtMoney((f.price_usd || 0) * (rate?.pkrPerUsd || 280), "PKR")}`}
+                        ? fmtMoney(pvPkr || 0, "PKR")
+                        : `≈ ${fmtMoney((pvUsd || 0) * (rate?.pkrPerUsd || 280), "PKR")}`}
                     </div>
                     <div className="text-xs text-neutral-500">
                       {aqua ? "Pakistan" : "Pakistan (live rate)"}
@@ -902,7 +1092,7 @@ export default function AdminProductForm() {
                   {!aqua && (
                     <div>
                       <div className="text-xl font-extrabold text-royal">
-                        {fmtMoney(f.price_usd || 0, "USD")}
+                        {fmtMoney(pvUsd || 0, "USD")}
                       </div>
                       <div className="text-xs text-neutral-500">USA</div>
                     </div>
@@ -916,7 +1106,7 @@ export default function AdminProductForm() {
           </Reveal>
 
           <button
-            disabled={busy || up || vUp}
+            disabled={busy || up || vUp || vImgUp >= 0}
             className="btn-gold w-full !py-4 text-base"
           >
             {busy ? (

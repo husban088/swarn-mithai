@@ -1,11 +1,11 @@
 // Order / checkout / cart emails (customer ko details + admin ko copy).
-// Sab emails ek hi Gmail se jati hain (SMTP_USER). Pakistan = "Apna Pani", USA = "Mithai House" naam ke sath.
+// Sab emails ek hi Gmail se jati hain (SMTP_USER). Pakistan = "Evelyn One", USA = "Mithai House" naam ke sath.
 // Test karne ke liye (server folder me):  node orderEmail.js customer@gmail.com PK
 require("dotenv").config();
 const nodemailer = require("nodemailer");
 
 const BRANDS = {
-  PK: { name: "Apna Pani", tagline: "Pure Drinking Water" },
+  PK: { name: "Evelyn One", tagline: "Pure Drinking Water" },
   US: {
     name: "Mithai House",
     tagline: "Handcrafted Mithai",
@@ -171,7 +171,7 @@ function payLine(order) {
     : `${n} - awaiting payment`;
 }
 
-// Brand order ke products ke hisaab se: sirf mithai = Mithai House, sirf water = Apna Pani.
+// Brand order ke products ke hisaab se: sirf mithai = Mithai House, sirf water = Evelyn One.
 // Mix ya purana order (category save nahi) = country se.
 const brandOf = (order) => {
   const cats = new Set(
@@ -355,7 +355,7 @@ module.exports = { sendOrderMails, buildOrderEmail, verify };
 
 /* ------------------------- Quick test -------------------------
    server folder me:   node orderEmail.js customer@gmail.com PK
-   (PK = Apna Pani water email, US = Mithai House mithai email)                */
+   (PK = Evelyn One water email, US = Mithai House mithai email)                */
 if (require.main === module) {
   (async () => {
     const to = process.argv[2];
@@ -379,13 +379,13 @@ if (require.main === module) {
       items: pk
         ? [
             {
-              name: "Apna Pani 19 L",
+              name: "Evelyn One 19 L",
               unit: "19 L bottle",
               qty: 2,
               price: 600,
             },
             {
-              name: "Apna Pani 1.5 L",
+              name: "Evelyn One 1.5 L",
               unit: "Pack of 6",
               qty: 2,
               price: 500,

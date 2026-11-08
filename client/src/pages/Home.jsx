@@ -152,7 +152,7 @@ export default function Home() {
       {/* ============ SALE BANNER (admin sale lagate hi live) ============ */}
       <SaleBanner variant="full" />
 
-      {/* ============ CATEGORIES (Apna Pani + Mithai cards) ============ */}
+      {/* ============ CATEGORIES (Evelyn One + Mithai cards) ============ */}
       <CategoryCards sweets={sweets} aqua={aqua} />
 
       {/* ============ FEATURED ============ */}
@@ -286,7 +286,7 @@ export default function Home() {
             <p className="mt-5 leading-relaxed text-neutral-600">
               {sweets
                 ? "Mithai House is the standard we cook to. Every piece is hand rolled in small batches with pure desi ghee, real khoya, whole nuts and saffron, then packed like a gift because that is what it is."
-                : "Apna Pani is the name families trust for clean drinking water. Every bottle is purified in several stages, tested and sealed before it ever leaves us."}
+                : "Evelyn One is the name families trust for clean drinking water. Every bottle is purified in several stages, tested and sealed before it ever leaves us."}
             </p>
             <p className="mt-4 leading-relaxed text-neutral-600">
               {sweets

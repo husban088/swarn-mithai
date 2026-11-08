@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { brandFor } from "../config";
 import { useGeo } from "../store";
 
-// Mark: chhota seal (Mithai House = "M", Apna Pani = paani ki boond). Navbar/footer me asli logo (Logo) use hota hai.
+// Mark: chhota seal (Mithai House = "M", Evelyn One = paani ki boond). Navbar/footer me asli logo (Logo) use hota hai.
 export function Mark({ size = 44, letter = "M", drop = false }) {
   const id = `lg-${letter}${drop ? "d" : "s"}`;
   return (
@@ -75,12 +75,24 @@ export function Mark({ size = 44, letter = "M", drop = false }) {
   );
 }
 
-// Country ke hisaab se asli brand logo (Pakistan = Apna Pani, USA = Mithai House).
-// Logos client/public/brand/ me hain: apna-pani.png aur mithai-house.png
-// plate = true: logo ke peechay safed card (dark background par Mithai House ka kala logo bhi saaf dikhe)
+// Country ke hisaab se asli brand logo (Pakistan = Evelyn One, USA = Mithai House).
+// Evelyn One: transparent SVG emblem (koi white plate nahi), har background par chalta hai.
+// Mithai House: PNG logo, dark par safed card ke sath (plate = true).
 export function BrandMark({ size = 44, plate = true }) {
   const { country } = useGeo();
   const b = brandFor(country?.code);
+  if (b.mark) {
+    const px = `min(${size}px, 42vw)`; // chhoti screen par apne aap chhota
+    return (
+      <img
+        src={b.mark}
+        alt={b.name}
+        style={{ width: px, height: px }}
+        className="select-none object-contain drop-shadow-[0_10px_24px_rgba(29,127,224,0.35)]"
+        draggable="false"
+      />
+    );
+  }
   const img = (
     <img
       src={b.logo}
@@ -98,9 +110,26 @@ export function BrandMark({ size = 44, plate = true }) {
   );
 }
 
-export default function Logo({ light = false }) {
+// light = dark background (footer) par; compact = tagline ke bina chhota version (Navbar, sidebar)
+export default function Logo({ light = false, compact }) {
   const { country } = useGeo();
   const b = brandFor(country?.code);
+  const evelyn = !!b.logoCompact;
+  const small = compact ?? !light;
+
+  let src = b.logo;
+  let cls = "h-16 sm:h-[4.5rem]"; // Mithai House
+  let plate = light; // Mithai ka PNG dark par safed card me
+  if (evelyn) {
+    plate = false; // Evelyn One hamesha transparent
+    if (small) {
+      src = light ? b.logoCompactLight : b.logoCompact;
+      cls = "h-10 sm:h-12 lg:h-[3.4rem]";
+    } else {
+      src = light ? b.logoLight : b.logo;
+      cls = "h-14 sm:h-16";
+    }
+  }
   return (
     <Link
       to="/"
@@ -109,19 +138,15 @@ export default function Logo({ light = false }) {
     >
       <span
         className={
-          light
+          plate
             ? "rounded-2xl bg-white px-3 py-1.5 shadow-lg shadow-black/25"
             : ""
         }
       >
         <img
-          src={b.logo}
+          src={src}
           alt={b.name}
-          className={`w-auto select-none object-contain transition duration-500 group-hover:scale-105 ${
-            b.key === "apnapani"
-              ? "h-[4.75rem] sm:h-[5.75rem]"
-              : "h-16 sm:h-[4.5rem]"
-          }`}
+          className={`w-auto max-w-full select-none object-contain transition duration-500 group-hover:scale-105 ${cls}`}
           draggable="false"
         />
       </span>

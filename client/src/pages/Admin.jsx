@@ -14,17 +14,21 @@ import {
   Pencil,
   Plus,
   RefreshCw,
+  Search,
   Trash2,
   TrendingUp,
   Truck,
   Users,
   Wallet,
+  X,
   XCircle,
 } from "lucide-react";
 import Thumb from "../components/Thumb";
+import { imagesOf } from "../lib/img";
 import AdminSales from "../components/AdminSales";
 import AdminSale from "../components/AdminSale";
 import { downloadInvoice } from "../lib/invoice";
+import { orderMatches } from "../lib/orderSearch";
 import { api, json } from "../lib/api";
 import {
   CATEGORIES,
@@ -35,8 +39,121 @@ import {
   STATUS_STYLE,
 } from "../config";
 import { fmtMoney, normStatus, shortId } from "../lib/format";
-import { useAuth, useShop, useToast } from "../store";
+import { useShop, useToast } from "../store";
 import { useAdminScope } from "../lib/adminScope";
+import AdminRegionSwitch from "../components/AdminRegionSwitch";
+
+// Ek product ki row: options hon to chip se option chuno, left wali image us option ki dikhti hai
+// (pehla option pehle se active).
+function ProductRow({ p, sc, del }) {
+  const vars = Array.isArray(p.variants) ? p.variants : [];
+  const [k, setK] = useState(0);
+  const cur = vars.length ? vars[Math.min(k, vars.length - 1)] : null;
+  const imgs = cur
+    ? cur.images?.length
+      ? cur.images
+      : cur.image
+        ? [cur.image]
+        : imagesOf(p)
+    : imagesOf(p);
+  const optPrice = (v) => {
+    const n = sc.cur === "USD" ? v.price_usd : v.price_pkr;
+    return n == null || n === ""
+      ? "—"
+      : sc.cur === "USD"
+        ? `$${Number(n).toFixed(2)}`
+        : `Rs ${Number(n).toLocaleString("en-PK")}`;
+  };
+  return (
+    <tr className="border-t border-gold-100 transition hover:bg-gold-50/50">
+      <td className="p-4">
+        <div className="flex items-center gap-3">
+          <div className="group h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-gold-100 bg-white">
+            <Thumb
+              key={imgs[0] || "none"}
+              p={{
+                ...p,
+                variants: [],
+                images: imgs,
+                image_url: imgs[0] || "",
+              }}
+              w={200}
+              zoom={false}
+            />
+          </div>
+          <div>
+            <div className="font-semibold text-royal">{p.name}</div>
+            <div className="text-xs text-neutral-500">{p.unit}</div>
+            {cur && (
+              <div className="mt-0.5 text-[11px] text-gold-600">
+                {cur.label} · {imgs.length} image{imgs.length === 1 ? "" : "s"}
+              </div>
+            )}
+          </div>
+        </div>
+      </td>
+      <td className="p-4">{CATEGORIES[p.category]?.label}</td>
+      <td className="p-4">
+        {vars.length ? (
+          <div className="flex flex-col items-start gap-1.5 text-xs">
+            {vars.map((v, i) => (
+              <button
+                type="button"
+                key={v.key || i}
+                onClick={() => setK(i)}
+                className={`whitespace-nowrap rounded-xl border px-3 py-1.5 text-left transition ${i === k ? "border-gold-500 bg-gold-50 shadow-sm" : "border-gold-200 hover:bg-gold-50"}`}
+              >
+                <span className="text-neutral-500">{v.label}: </span>
+                <b className="text-royal">{optPrice(v)}</b>
+              </button>
+            ))}
+          </div>
+        ) : sc.cur === "USD" ? (
+          p.price_usd != null ? (
+            `$${Number(p.price_usd).toFixed(2)}`
+          ) : (
+            "—"
+          )
+        ) : p.price_pkr != null ? (
+          `Rs ${Number(p.price_pkr).toLocaleString("en-PK")}`
+        ) : (
+          "—"
+        )}
+      </td>
+      <td className="p-4">
+        <span
+          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${p.in_stock ? "bg-royal-soft text-royal" : "bg-red-50 text-red-700"}`}
+        >
+          {p.in_stock ? "In stock" : "Out of stock"}
+        </span>
+        {p.featured && (
+          <span className="ml-1.5 rounded-full bg-gold-100 px-2.5 py-1 text-xs font-semibold text-gold-700">
+            Bestseller
+          </span>
+        )}
+      </td>
+      <td className="p-4">
+        <div className="flex justify-end gap-2">
+          <Link
+            to={`/admin/products/${p.id}/edit`}
+            aria-label="Edit"
+            title="Edit product"
+            className="grid h-9 w-9 place-items-center rounded-full border border-gold-200 text-royal transition duration-300 hover:-translate-y-0.5 hover:scale-110 hover:bg-gold-50 hover:shadow-md"
+          >
+            <Pencil size={15} />
+          </Link>
+          <button
+            onClick={() => del(p)}
+            aria-label="Delete"
+            className="grid h-9 w-9 place-items-center rounded-full border border-red-200 text-red-600 transition hover:-translate-y-0.5 hover:bg-red-50"
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+}
 
 function ProductsTab() {
   const toast = useToast();
@@ -104,87 +221,7 @@ function ProductsTab() {
               </tr>
             )}
             {rows.map((p) => (
-              <tr
-                key={p.id}
-                className="border-t border-gold-100 transition hover:bg-gold-50/50"
-              >
-                <td className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="group h-12 w-12 shrink-0 overflow-hidden rounded-xl">
-                      <Thumb p={p} />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-royal">{p.name}</div>
-                      <div className="text-xs text-neutral-500">{p.unit}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="p-4">{CATEGORIES[p.category]?.label}</td>
-                <td className="p-4">
-                  {Array.isArray(p.variants) && p.variants.length ? (
-                    <div className="space-y-0.5 text-xs">
-                      {p.variants.map((v) => {
-                        const n = sc.cur === "USD" ? v.price_usd : v.price_pkr;
-                        return (
-                          <div key={v.key} className="whitespace-nowrap">
-                            <span className="text-neutral-500">
-                              {v.label}:{" "}
-                            </span>
-                            <b className="text-royal">
-                              {n == null || n === ""
-                                ? "—"
-                                : sc.cur === "USD"
-                                  ? `$${Number(n).toFixed(2)}`
-                                  : `Rs ${Number(n).toLocaleString("en-PK")}`}
-                            </b>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : sc.cur === "USD" ? (
-                    p.price_usd != null ? (
-                      `$${Number(p.price_usd).toFixed(2)}`
-                    ) : (
-                      "—"
-                    )
-                  ) : p.price_pkr != null ? (
-                    `Rs ${Number(p.price_pkr).toLocaleString("en-PK")}`
-                  ) : (
-                    "—"
-                  )}
-                </td>
-                <td className="p-4">
-                  <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${p.in_stock ? "bg-royal-soft text-royal" : "bg-red-50 text-red-700"}`}
-                  >
-                    {p.in_stock ? "In stock" : "Out of stock"}
-                  </span>
-                  {p.featured && (
-                    <span className="ml-1.5 rounded-full bg-gold-100 px-2.5 py-1 text-xs font-semibold text-gold-700">
-                      Bestseller
-                    </span>
-                  )}
-                </td>
-                <td className="p-4">
-                  <div className="flex justify-end gap-2">
-                    <Link
-                      to={`/admin/products/${p.id}/edit`}
-                      aria-label="Edit"
-                      title="Edit product"
-                      className="grid h-9 w-9 place-items-center rounded-full border border-gold-200 text-royal transition duration-300 hover:-translate-y-0.5 hover:scale-110 hover:bg-gold-50 hover:shadow-md"
-                    >
-                      <Pencil size={15} />
-                    </Link>
-                    <button
-                      onClick={() => del(p)}
-                      aria-label="Delete"
-                      className="grid h-9 w-9 place-items-center rounded-full border border-red-200 text-red-600 transition hover:-translate-y-0.5 hover:bg-red-50"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
+              <ProductRow key={p.id} p={p} sc={sc} del={del} />
             ))}
             {!loading && rows.length === 0 && (
               <tr>
@@ -429,6 +466,7 @@ function OrdersTab() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
   const load = useCallback(async () => {
     try {
@@ -461,18 +499,45 @@ function OrdersTab() {
     }
   };
 
-  const counts = rows.reduce((m, o) => {
+  // Search: order #, customer name, email, phone (USA + Pakistan dono)
+  const searched = search.trim()
+    ? rows.filter((o) => orderMatches(o, search))
+    : rows;
+  const counts = searched.reduce((m, o) => {
     const k = normStatus(o.status);
     m[k] = (m[k] || 0) + 1;
     return m;
   }, {});
   const list =
     filter === "all"
-      ? rows
-      : rows.filter((o) => normStatus(o.status) === filter);
+      ? searched
+      : searched.filter((o) => normStatus(o.status) === filter);
 
   return (
     <div>
+      <div className="relative mb-4 max-w-xl">
+        <Search
+          size={16}
+          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
+        />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by order #, customer name, email or phone"
+          className="w-full rounded-full border border-gold-200 bg-white py-2.5 pl-10 pr-10 text-sm outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-200"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => setSearch("")}
+            aria-label="Clear search"
+            className="absolute right-3 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-full text-neutral-500 transition hover:bg-gold-50"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
       <div className="flex flex-wrap gap-2">
         {["all", ...ORDER_STATUSES].map((k) => (
           <button
@@ -480,7 +545,7 @@ function OrdersTab() {
             onClick={() => setFilter(k)}
             className={`rounded-full border px-4 py-2 text-xs font-semibold capitalize transition ${filter === k ? "gold-bg border-transparent text-white shadow-md" : "border-gold-200 text-neutral-600 hover:bg-gold-50"}`}
           >
-            {k} ({k === "all" ? rows.length : counts[k] || 0})
+            {k} ({k === "all" ? searched.length : counts[k] || 0})
           </button>
         ))}
       </div>
@@ -499,7 +564,7 @@ function OrdersTab() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan="5" className="p-8 text-center text-neutral-500">
+                <td colSpan="6" className="p-8 text-center text-neutral-500">
                   Loading…
                 </td>
               </tr>
@@ -569,8 +634,8 @@ function OrdersTab() {
                           </span>
                         )}
                         <span className="mt-1 block font-normal text-emerald-900/80">
-                          Check it shows Citibank, account {BANK.account} and the
-                          owner name. If not, set the order to cancelled.
+                          Check it shows Citibank, account {BANK.account} and
+                          the owner name. If not, set the order to cancelled.
                         </span>
                       </div>
                     )}
@@ -607,7 +672,9 @@ function OrdersTab() {
             {!loading && list.length === 0 && (
               <tr>
                 <td colSpan="6" className="p-8 text-center text-neutral-500">
-                  No orders here.
+                  {search.trim()
+                    ? "Is search se koi order nahi mila."
+                    : "No orders here."}
                 </td>
               </tr>
             )}
@@ -627,7 +694,6 @@ const TABS = [
 ];
 
 export default function Admin() {
-  const { user } = useAuth();
   const sc = useAdminScope();
   const [params, setParams] = useSearchParams();
   const t = params.get("tab");
@@ -642,25 +708,35 @@ export default function Admin() {
     );
   return (
     <div className="container-x py-12">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex items-center gap-5">
-          <span className="grid shrink-0 place-items-center rounded-3xl border border-gold-200 bg-white p-3 shadow-lg shadow-slate-900/10 transition duration-500 hover:-translate-y-1 hover:shadow-xl">
+          {sc.mark ? (
             <img
-              src={sc.logo}
+              src={sc.mark}
               alt={sc.brand}
-              className="h-16 w-auto object-contain sm:h-20"
+              className="h-14 w-14 shrink-0 object-contain transition duration-500 hover:-translate-y-1 sm:h-20 sm:w-20"
               draggable="false"
             />
-          </span>
+          ) : (
+            <span className="grid shrink-0 place-items-center rounded-3xl border border-gold-200 bg-white p-3 shadow-lg shadow-slate-900/10 transition duration-500 hover:-translate-y-1 hover:shadow-xl">
+              <img
+                src={sc.logo}
+                alt={sc.brand}
+                className="h-16 w-auto object-contain sm:h-20"
+                draggable="false"
+              />
+            </span>
+          )}
           <div>
             <h1 className="font-display text-4xl font-bold text-royal sm:text-5xl">
               {sc.brand} admin
             </h1>
             <p className="mt-1 text-sm text-neutral-500">
-              Signed in as {user?.email} · {sc.market} ({sc.cur})
+              Signed in as {sc.email} · {sc.market} ({sc.cur})
             </p>
           </div>
         </div>
+        <AdminRegionSwitch />
       </div>
       <div className="mt-6 flex flex-wrap gap-2">
         {TABS.map(({ key, label, icon: Icon }) => (
@@ -674,7 +750,7 @@ export default function Admin() {
           </button>
         ))}
       </div>
-      <div className="mt-6">
+      <div className="mt-6" key={sc.country}>
         {tab === "dashboard" ? (
           <DashboardTab />
         ) : tab === "products" ? (

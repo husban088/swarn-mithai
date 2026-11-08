@@ -4,15 +4,19 @@ export const BRAND = {
   email: "hello@mithaihouse.example",
 };
 
-// Country ke hisaab se brand: Pakistan = Apna Pani (water), USA = Mithai House (mithai).
+// Country ke hisaab se brand: Pakistan = Evelyn One (water), USA = Mithai House (mithai).
 // Naam / tagline / email yahin se badal sakte hain.
 export const BRANDS = {
   PK: {
-    key: "apnapani",
-    name: "Apna Pani",
-    letter: "A",
+    key: "evelynone",
+    name: "Evelyn One",
+    letter: "E",
     drop: true,
-    logo: "/brand/apna-pani.png",
+    logo: "/brand/evelyn-one.svg",
+    logoLight: "/brand/evelyn-one-light.svg", // dark background wala (transparent) version
+    logoCompact: "/brand/evelyn-one-compact.svg", // Navbar / sidebar (tagline ke bina)
+    logoCompactLight: "/brand/evelyn-one-compact-light.svg",
+    mark: "/brand/evelyn-one-mark.svg", // sirf gol emblem (cards, admin)
     tagline: "Pure Drinking Water",
     email: "wjahattahir@gmail.com",
     blurb: "Purified water, tested and sealed fresh.",
@@ -40,7 +44,7 @@ export const COUNTRIES = {
     locale: "en-PK",
     categories: ["sweets", "aqua"],
     tagline: "Pure Drinking Water",
-    bar: "Cash on delivery across Pakistan · Apna Pani pure drinking water",
+    bar: "Cash on delivery across Pakistan · Evelyn One pure drinking water",
     phone: "+92 300 6672053",
     phone2: "+92 302 8213652",
     city: "Faisalabad, Pakistan",
@@ -70,8 +74,8 @@ export const CATEGORIES = {
   },
   aqua: {
     key: "aqua",
-    label: "Apna Pani",
-    blurb: "Apna Pani purified drinking water in bottles for home and office.",
+    label: "Evelyn One",
+    blurb: "Evelyn One purified drinking water in bottles for home and office.",
     icon: "💧",
   },
 };

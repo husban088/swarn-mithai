@@ -1,5 +1,11 @@
-import { Suspense, lazy, useEffect, useRef } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Suspense, lazy, useEffect, useLayoutEffect, useRef } from "react";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigationType,
+} from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import CartDrawer from "./components/CartDrawer";
@@ -7,6 +13,7 @@ import { Mark } from "./components/Logo";
 import { useAuth, useGeo } from "./store";
 import { brandFor } from "./config";
 import Home from "./pages/Home";
+import { track } from "./lib/nav";
 
 // Baqi pages sirf tab download hote hain jab khulen (pehli load bohat halki rehti hai).
 // Admin wale pages me PDF/zip libraries hain, wo ab aam customers ko download hi nahi hoti.
@@ -54,11 +61,65 @@ function PageFallback() {
   return <div className="min-h-[60vh]" aria-hidden="true" />;
 }
 
+// Naya page (link click) = top par. Back/Forward (POP) = jahan chhoda tha wahi scroll position.
+// Isi se product detail se Back karne par Shop usi pagination page aur usi jagah khulta hai.
 function ScrollTop() {
-  const { pathname } = useLocation();
+  const loc = useLocation();
+  const navType = useNavigationType();
+  const positions = useRef(new Map()); // location.key -> scrollY
+  const keyRef = useRef(loc.key);
+  const pathRef = useRef(loc.pathname);
+
+  // Browser ki apni restore band, hum khud karte hain (lazy pages me browser ka restore galat chalta hai)
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-  }, [pathname]);
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
+  // Har scroll par is page ki position yaad rakho
+  useEffect(() => {
+    let raf = 0;
+    const on = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        positions.current.set(keyRef.current, window.scrollY);
+      });
+    };
+    window.addEventListener("scroll", on, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", on);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    const pathChanged = pathRef.current !== loc.pathname;
+    // Pehle saved position parho, phir key badlo (warna naye page ka scroll event usay overwrite kar de)
+    const target = navType === "POP" ? positions.current.get(loc.key) : undefined;
+    keyRef.current = loc.key;
+    pathRef.current = loc.pathname;
+
+    if (navType === "POP" && target > 0) {
+      // Page abhi load ho raha ho sakta hai (lazy chunk / products), is liye height milne tak dobara try
+      let tries = 0;
+      let raf = 0;
+      const attempt = () => {
+        window.scrollTo({ top: target, left: 0, behavior: "instant" });
+        tries += 1;
+        if (Math.abs(window.scrollY - target) > 2 && tries < 90) {
+          raf = requestAnimationFrame(attempt);
+        }
+      };
+      attempt();
+      return () => cancelAnimationFrame(raf);
+    }
+    // Sirf page (pathname) badle to top; ?page= / filter badle to scroll na chhero
+    if (pathChanged) {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+  }, [loc.key]);
   return null;
 }
 
@@ -123,9 +184,10 @@ export default function App() {
   const { ready, country } = useGeo();
   const { user } = useAuth();
   const { pathname } = useLocation();
+  track(pathname); // pichla page yaad rakho (Back to shop ke liye)
   usePrefetchPages();
 
-  // Browser tab title + search description: Pakistan = Apna Pani (water), baqi = Mithai House (mithai)
+  // Browser tab title + search description: Pakistan = Evelyn One (water), baqi = Mithai House (mithai)
   useEffect(() => {
     if (!country) return;
     const pk = country.code === "PK";

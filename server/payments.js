@@ -177,7 +177,7 @@ module.exports = function mountOrders(ctx) {
           {
             reference_id: order.id,
             custom_id: order.id,
-            description: `${order.country === "PK" ? "Apna Pani" : "Mithai House"} order #${short(order.id)}`,
+            description: `${order.country === "PK" ? "Evelyn One" : "Mithai House"} order #${short(order.id)}`,
             amount: {
               currency_code: "USD",
               value: ppAmount(order, (await getRate()).rate),
@@ -187,7 +187,7 @@ module.exports = function mountOrders(ctx) {
         payment_source: {
           paypal: {
             experience_context: {
-              brand_name: order.country === "PK" ? "Apna Pani" : "Mithai House",
+              brand_name: order.country === "PK" ? "Evelyn One" : "Mithai House",
               user_action: "PAY_NOW",
               shipping_preference: "NO_SHIPPING",
               return_url: `${base}/order-placed/${order.id}`,

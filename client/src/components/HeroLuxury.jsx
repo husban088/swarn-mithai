@@ -20,7 +20,7 @@ import { useSale } from "./SaleBanner";
 
 /* ------------------------------------------------------------------ */
 /* HERO IMAGES  ->  client/public/hero/                                */
-/*   Pakistan (Apna Pani): apna-pani-1.jpg  apna-pani-2.jpg  apna-pani-3.jpg       */
+/*   Pakistan (Evelyn One): apna-pani-1.jpeg  apna-pani-2.jpeg  apna-pani-3.jpeg       */
 /*   USA (Mithai):      mithai-1.jpg  mithai-2.jpg  mithai-3.jpg       */
 /* Image na mile to admin ki product image, wo bhi na ho to illustration */
 /* Images hamesha POORI dikhti hain (crop / stretch nahi hoti).        */
@@ -29,14 +29,14 @@ import { useSale } from "./SaleBanner";
 const SLIDES = {
   PK: [
     {
-      img: "/hero/apna-pani-1.jpg",
+      img: "/hero/apna-pani-1.jpeg",
       cat: "aqua",
-      eyebrow: "Apna Pani pure & sealed",
-      lines: ["Pure water,", "perfectly", "Apna Pani."],
+      eyebrow: "Evelyn One pure & sealed",
+      lines: ["Pure water,", "perfectly", "Evelyn One."],
       text: "Multi-stage purified drinking water, sealed fresh and delivered to your doorstep. Clean, crisp and trusted by families and offices across Pakistan.",
       tag: "500 ml · 1.5 L · 19 L",
       label: "The Perfect Choice",
-      cta: { to: "/shop?cat=aqua", text: "Order Apna Pani" },
+      cta: { to: "/shop?cat=aqua", text: "Order Evelyn One" },
       chips: [
         { i: ShieldCheck, t: "Multi-stage purified", d: "Quality tested" },
         { i: Droplets, t: "Sealed fresh", d: "Every single bottle" },
@@ -44,11 +44,11 @@ const SLIDES = {
       ],
     },
     {
-      img: "/hero/apna-pani-2.jpg",
+      img: "/hero/apna-pani-2.jpeg",
       cat: "aqua",
       eyebrow: "On the go",
       lines: ["Fresh for", "every single", "journey."],
-      text: "Handy 500 ml and 1.5 L Apna Pani bottles for travel, school, gym, weddings and events. Packed in convenient cartons, always chilled-ready.",
+      text: "Handy 500 ml and 1.5 L Evelyn One bottles for travel, school, gym, weddings and events. Packed in convenient cartons, always chilled-ready.",
       tag: "500 ml · 1.5 L",
       label: "Travel Bottles",
       cta: { to: "/shop?cat=aqua", text: "Shop bottles" },
@@ -59,11 +59,11 @@ const SLIDES = {
       ],
     },
     {
-      img: "/hero/apna-pani-3.jpg",
+      img: "/hero/apna-pani-3.jpeg",
       cat: "aqua",
       eyebrow: "Home & office",
       lines: ["19 litres of", "everyday", "trust."],
-      text: "The refillable family-size Apna Pani bottle for your home or office dispenser. Order once, get regular quick delivery whenever you need it.",
+      text: "The refillable family-size Evelyn One bottle for your home or office dispenser. Order once, get regular quick delivery whenever you need it.",
       tag: "19 L · Per bottle",
       label: "Family Size",
       cta: { to: "/shop?cat=aqua", text: "Shop 19 L bottle" },
@@ -215,7 +215,7 @@ function WaterArt() {
         fontSize="28"
         fill="#222227"
       >
-        Apna Pani
+        Evelyn One
       </text>
       <text
         x="200"
@@ -431,7 +431,7 @@ export default function HeroLuxury() {
               to={code === "PK" ? "/about" : "/contact"}
               className={`${btnBase} border-2 border-royal bg-white text-royal hover:bg-royal hover:text-white`}
             >
-              {code === "PK" ? "About Apna Pani" : "Event orders"}
+              {code === "PK" ? "About Evelyn One" : "Event orders"}
             </Link>
           </div>
 
@@ -580,7 +580,7 @@ export default function HeroLuxury() {
                 >
                   <textPath href="#hero-ring">
                     {code === "PK"
-                      ? "APNA PANI · PURE · SEALED · FRESH · "
+                      ? "EVELYN ONE · PURE · SEALED · FRESH · "
                       : "MITHAI HOUSE · HANDMADE · PURE GHEE · "}
                   </textPath>
                 </text>
