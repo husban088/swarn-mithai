@@ -1,5 +1,5 @@
 import { useAuth } from "../store";
-import { COUNTRY_SWITCH_EMAILS } from "../config";
+import { COUNTRY_SWITCH_EMAILS, SITE_COUNTRY } from "../config";
 import { useAdminView } from "./adminView";
 
 // Har admin sirf apni brand ka data dekhta hai (server user.adminScope bhejta hai):
@@ -9,9 +9,10 @@ import { useAdminView } from "./adminView";
 export function useAdminScope() {
   const { user } = useAuth();
   const view = useAdminView();
-  const isSuper = COUNTRY_SWITCH_EMAILS.includes(
-    String(user?.email || "").toLowerCase(),
-  );
+  // Alag link (VITE_SITE_COUNTRY) par region dropdown nahi hota
+  const isSuper =
+    !SITE_COUNTRY &&
+    COUNTRY_SWITCH_EMAILS.includes(String(user?.email || "").toLowerCase());
   // Super admin ne dusre region ka login kiya ho to us admin ka scope, warna apna
   const active = isSuper && view?.user ? view.user : user;
   const sc = active?.adminScope || null;

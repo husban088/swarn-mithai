@@ -16,7 +16,12 @@ import {
   setSession,
   trackProductView,
 } from "./lib/api";
-import { COUNTRIES, COUNTRY_SWITCH_EMAILS, money } from "./config";
+import {
+  COUNTRIES,
+  COUNTRY_SWITCH_EMAILS,
+  SITE_COUNTRY,
+  money,
+} from "./config";
 import { lineKey, pickVariant, variantsOf, viewOf } from "./lib/variants";
 
 /* ------------------------------------------------------------------ */
@@ -168,6 +173,7 @@ function GeoProvider({ children }) {
   const { user } = useAuth();
   // Pichli detected country se foran page dikhao, phir background me verify karo
   const [code, setCode] = useState(() => {
+    if (SITE_COUNTRY) return SITE_COUNTRY; // alag link: country fix hai
     try {
       const c = localStorage.getItem("swarn_country");
       return COUNTRIES[c] ? c : null;
@@ -178,9 +184,10 @@ function GeoProvider({ children }) {
   const busy = useRef(false);
 
   // Sirf wjahattahir@gmail.com (config.js: COUNTRY_SWITCH_EMAILS): country dropdown se Pakistan / USA chun sakta hai
-  const canSwitch = COUNTRY_SWITCH_EMAILS.includes(
-    String(user?.email || "").toLowerCase(),
-  );
+  // Alag link (VITE_SITE_COUNTRY) par dropdown nahi hota, country fix rehti hai
+  const canSwitch =
+    !SITE_COUNTRY &&
+    COUNTRY_SWITCH_EMAILS.includes(String(user?.email || "").toLowerCase());
   const [override, setOverrideState] = useState(() => {
     try {
       const c = localStorage.getItem("swarn_country_override");
@@ -203,6 +210,7 @@ function GeoProvider({ children }) {
   const codeRef = useRef(code);
   const lastRun = useRef(0);
   const refresh = useCallback(async () => {
+    if (SITE_COUNTRY) return; // country fix hai, IP se pehchanne ki zaroorat nahi
     if (busy.current) return;
     if (Date.now() - lastRun.current < 8000) return; // focus + visibility ek saath fire hon to dohra kaam nahi
     lastRun.current = Date.now();
@@ -245,7 +253,7 @@ function GeoProvider({ children }) {
   // Pakistan me Mithai sirf allowed email (server decide karta hai: user.pkMithai) ko dikhti hai.
   // Baqi sab ko Pakistan me sirf Evelyn One (water).
   // Dropdown wala admin: Pakistan = sirf Evelyn One, USA = sirf Mithai House
-  const active = canSwitch && override ? override : code;
+  const active = SITE_COUNTRY || (canSwitch && override ? override : code);
   const pkMithai = !!user?.pkMithai && !canSwitch;
   const country = useMemo(() => {
     if (!active) return null;

@@ -114,6 +114,15 @@ export const PAYMENT_STATUS_LABELS = {
   paid: "Paid",
 };
 
+// ---- Alag alag link (Vercel project) har country ke liye ----
+// Vercel me VITE_SITE_COUNTRY=PK  -> ye link hamesha sirf Pakistan (Evelyn One, PKR)
+// Vercel me VITE_SITE_COUNTRY=US  -> ye link hamesha sirf USA (Mithai House, USD)
+// Khali chhorein to purana tareeqa: visitor ki country khud pehchani jati hai.
+const _site = String(import.meta.env.VITE_SITE_COUNTRY || "")
+  .trim()
+  .toUpperCase();
+export const SITE_COUNTRY = COUNTRIES[_site] ? _site : "";
+
 // Sirf in emails ko navbar me country dropdown (Pakistan / USA) dikhta hai.
 // Jo country chuno, poori website usi country ki ban jati hai.
 export const COUNTRY_SWITCH_EMAILS = ["wjahattahir@gmail.com"];
