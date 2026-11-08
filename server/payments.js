@@ -34,7 +34,7 @@ module.exports = function mountOrders(ctx) {
     GATED_VARIANT,
   } = ctx;
 
-  // Server start par Gmail login check (console me result dikhta hai)
+  // Server start par Gmail (Pakistan) + Hotmail (USA) login check (console me result dikhta hai)
   if (!process.env.VERCEL) orderMail.verify();
 
   const STRIPE_KEY = process.env.STRIPE_SECRET_KEY || "";
@@ -187,7 +187,8 @@ module.exports = function mountOrders(ctx) {
         payment_source: {
           paypal: {
             experience_context: {
-              brand_name: order.country === "PK" ? "Evelyn One" : "Mithai House",
+              brand_name:
+                order.country === "PK" ? "Evelyn One" : "Mithai House",
               user_action: "PAY_NOW",
               shipping_preference: "NO_SHIPPING",
               return_url: `${base}/order-placed/${order.id}`,
@@ -256,7 +257,7 @@ module.exports = function mountOrders(ctx) {
     /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
   const CK_NAME = /^\p{L}[\p{L}\s.'’-]*$/u;
   const CK_CITY = /^\p{L}[\p{L}\s.,'’-]*$/u;
-  function checkCustomer(c) {
+  function checkCustomer(c, country) {
     const name = String(c.name || "").trim();
     const phone = String(c.phone || "").trim();
     const email = String(c.email || "").trim();
@@ -272,6 +273,9 @@ module.exports = function mountOrders(ctx) {
       return "Enter a valid phone number (7 to 15 digits).";
     if (!email) return "Please enter your email address.";
     if (!CK_EMAIL.test(email)) return "Enter a valid email address.";
+    // Pakistan (Evelyn One): sirf Gmail address, order ki details usi Gmail par jati hain
+    if (country === "PK" && !/@gmail\.com$/i.test(email))
+      return "Please enter your Gmail address (name@gmail.com). Order details are sent to your Gmail.";
     if (address.length < 5) return "Please enter your delivery address.";
     if (city.length < 2 || !CK_CITY.test(city))
       return "Enter a valid city name.";
@@ -318,7 +322,7 @@ module.exports = function mountOrders(ctx) {
       if (!Array.isArray(items) || !items.length)
         return res.status(400).json({ error: "Your cart is empty." });
       const c = customer || {};
-      const bad = checkCustomer(c);
+      const bad = checkCustomer(c, country);
       if (bad) return res.status(400).json({ error: bad });
 
       const rate = (await getRate()).rate;

@@ -22,6 +22,15 @@ export function vEmail(v) {
   return "";
 }
 
+// Pakistan checkout: sirf Gmail address chalega (order ki saari details usi Gmail par jati hain)
+export function vGmail(v) {
+  const base = vEmail(v);
+  if (base) return base;
+  if (!/@gmail\.com$/i.test(String(v).trim()))
+    return "Please enter your Gmail address (name@gmail.com). Order details are sent to your Gmail.";
+  return "";
+}
+
 export function vPassword(v) {
   if (!v) return "Please enter a password.";
   if (v.length < 6) return "Password must be at least 6 characters.";

@@ -120,6 +120,7 @@ function LoginModal({ region, onClose, onDone }) {
     <div
       className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-[#060607]/70 p-4 backdrop-blur-md"
       onMouseDown={(e) => e.target === e.currentTarget && !busy && onClose()}
+      onClick={(e) => e.target === e.currentTarget && !busy && onClose()}
       role="dialog"
       aria-modal="true"
       aria-label={`${R.label} admin login`}
@@ -135,7 +136,7 @@ function LoginModal({ region, onClose, onDone }) {
             onClick={onClose}
             disabled={busy}
             aria-label="Close"
-            className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full border border-white/25 bg-white/10 transition hover:bg-white/25"
+            className="absolute right-4 top-4 z-10 grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-white/25 bg-white/10 transition hover:bg-white/25"
           >
             <X size={16} />
           </button>

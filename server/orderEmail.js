@@ -1,5 +1,7 @@
 // Order / checkout / cart emails (customer ko details + admin ko copy).
-// Sab emails ek hi Gmail se jati hain (SMTP_USER). Pakistan = "Evelyn One", USA = "Mithai House" naam ke sath.
+// Har region ka apna sender hai:
+//   Pakistan (Evelyn One, PKR)  -> wjahattahir@gmail.com        (Gmail SMTP:   SMTP_USER / SMTP_PASS)
+//   USA (Mithai House, USD)     -> shahidmahmood73@hotmail.com  (Outlook SMTP: US_SMTP_USER / US_SMTP_PASS)
 // Test karne ke liye (server folder me):  node orderEmail.js customer@gmail.com PK
 require("dotenv").config();
 const nodemailer = require("nodemailer");
@@ -35,96 +37,149 @@ const validEmail = (e) =>
     String(e || "").trim(),
   );
 
-/* ------------------------- Gmail SMTP ------------------------- */
-const smtpUser = () =>
-  String(process.env.SMTP_USER || "")
+/* ------------------------- SMTP (har region ka apna sender) ------------------------- */
+const unq = (v) =>
+  String(v || "")
     .trim()
     .replace(/^"|"$/g, "");
-// Gmail App Password aksar "abcd efgh ijkl mnop" (spaces ke sath) milta hai - spaces hata do
-const smtpPass = () =>
-  String(process.env.SMTP_PASS || "")
+// App Password aksar "abcd efgh ijkl mnop" (spaces ke sath) milta hai - spaces hata do
+const noSpace = (v) =>
+  String(v || "")
     .replace(/^"|"$/g, "")
     .replace(/\s+/g, "");
+const regionOf = (c) => (String(c || "").toUpperCase() === "PK" ? "PK" : "US");
 
-function notConfiguredReason() {
-  const u = smtpUser();
-  const p = smtpPass();
-  if (!u || !p) return "server/.env me SMTP_USER ya SMTP_PASS khali hai.";
-  if (/yourgmail|example\.com/i.test(u))
-    return "SMTP_USER abhi placeholder (yourgmail@gmail.com) hai. Apna Gmail likhein.";
-  if (/your-?16|app-?password/i.test(p))
-    return "SMTP_PASS abhi placeholder hai. Gmail ka 16-character App Password likhein.";
+// Customer reply isi address par aati hai
+const REPLY_TO = {
+  PK: "wjahattahir@gmail.com",
+  US: "shahidmahmood73@hotmail.com",
+};
+
+function senderConf(r) {
+  if (r === "PK")
+    return {
+      user: unq(process.env.SMTP_USER) || REPLY_TO.PK,
+      pass: noSpace(process.env.SMTP_PASS),
+      host: unq(process.env.SMTP_HOST) || "smtp.gmail.com",
+      port: Number(process.env.SMTP_PORT || 465),
+    };
+  return {
+    user: unq(process.env.US_SMTP_USER) || REPLY_TO.US,
+    pass: noSpace(process.env.US_SMTP_PASS),
+    host: unq(process.env.US_SMTP_HOST) || "smtp-mail.outlook.com",
+    port: Number(process.env.US_SMTP_PORT || 587),
+  };
+}
+
+function notConfiguredReason(r) {
+  const c = senderConf(r);
+  const names =
+    r === "PK" ? "SMTP_USER / SMTP_PASS" : "US_SMTP_USER / US_SMTP_PASS";
+  if (!c.user || !c.pass) return `server/.env me ${names} khali hai.`;
+  if (/yourgmail|example\.com/i.test(c.user))
+    return `${names}: email abhi placeholder hai. Asli email likhein.`;
+  if (/your-?16|app-?password/i.test(c.pass))
+    return `${names}: password abhi placeholder hai. App Password likhein.`;
   return "";
 }
 
-let transporter = null;
-function getTransport() {
-  if (notConfiguredReason()) return null;
-  if (!transporter) {
-    const port = Number(process.env.SMTP_PORT || 465);
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port,
-      secure: port === 465,
-      auth: { user: smtpUser(), pass: smtpPass() },
+const transporters = {};
+function getTransport(r) {
+  if (notConfiguredReason(r)) return null;
+  if (!transporters[r]) {
+    const c = senderConf(r);
+    transporters[r] = nodemailer.createTransport({
+      host: c.host,
+      port: c.port,
+      secure: c.port === 465,
+      requireTLS: c.port !== 465, // Outlook/Hotmail (587) STARTTLS
+      auth: { user: c.user, pass: c.pass },
       pool: true,
       maxConnections: 3,
       maxMessages: 50,
     });
   }
-  return transporter;
+  return transporters[r];
 }
 
-// Server start par ek dafa: Gmail login theek hai ya nahi, console me bata deta hai
-async function verify() {
-  const why = notConfiguredReason();
-  if (why) {
-    console.warn(`\n[mail] EMAIL BAND HAI -> ${why}\n`);
-    return false;
-  }
-  try {
-    await getTransport().verify();
-    console.log(
-      `[mail] Gmail ready. Emails is address se jayengi: ${smtpUser()}`,
-    );
-    return true;
-  } catch (e) {
-    const bad =
-      e.responseCode === 535 ||
-      /Invalid login|Username and Password/i.test(e.message || "");
+// Region ka apna sender; agar USA ka Hotmail abhi set nahi to Pakistan wale Gmail se bhej do
+// (reply-to phir bhi USA ki Hotmail hoti hai) taake email band na ho.
+function pickSender(r) {
+  if (!notConfiguredReason(r)) return r;
+  if (r === "US" && !notConfiguredReason("PK")) {
     console.warn(
-      `\n[mail] Gmail login fail: ${e.message}\n` +
-        (bad
-          ? "[mail] App Password galat hai, ya Google account me 2-Step Verification on nahi hai.\n"
-          : ""),
+      `[mail] USA sender set nahi (${notConfiguredReason("US")}) -> abhi Gmail se bhej rahe hain`,
     );
-    return false;
+    return "PK";
   }
+  return null;
 }
 
-async function deliver(msg) {
-  const t = getTransport();
-  if (!t) {
+// Server start par ek dafa: dono logins theek hain ya nahi, console me bata deta hai
+async function verify() {
+  let all = true;
+  for (const r of ["PK", "US"]) {
+    const why = notConfiguredReason(r);
+    if (why) {
+      console.warn(`\n[mail] ${r} EMAIL BAND HAI -> ${why}\n`);
+      all = false;
+      continue;
+    }
+    try {
+      await getTransport(r).verify();
+      console.log(
+        `[mail] ${r} ready. Emails is address se jayengi: ${senderConf(r).user}`,
+      );
+    } catch (e) {
+      all = false;
+      const bad =
+        e.responseCode === 535 ||
+        /Invalid login|Username and Password|Authentication unsuccessful/i.test(
+          e.message || "",
+        );
+      console.warn(
+        `\n[mail] ${r} login fail (${senderConf(r).user}): ${e.message}\n` +
+          (bad
+            ? "[mail] App Password galat hai, ya account me 2-Step Verification / SMTP on nahi hai.\n"
+            : ""),
+      );
+    }
+  }
+  return all;
+}
+
+// region = "PK" ya "US". msg me from nahi dena, fromName dena hai.
+async function sendRegional(region, msg) {
+  const r = regionOf(region);
+  const use = pickSender(r);
+  if (!use) {
     console.warn(
       "[mail] skip (SMTP set nahi):",
       msg.subject,
       "-",
-      notConfiguredReason(),
+      notConfiguredReason(r),
     );
     return false;
   }
+  const t = getTransport(use);
+  const { fromName, ...rest } = msg;
+  const out = {
+    ...rest,
+    from: { name: fromName || "", address: senderConf(use).user },
+    replyTo: rest.replyTo || REPLY_TO[r],
+  };
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const info = await t.sendMail(msg);
+      const info = await t.sendMail(out);
       console.log(
-        `[mail] sent -> ${[].concat(msg.to).join(", ")} | ${msg.subject} | ${info.response || ""}`,
+        `[mail] sent (${r}) -> ${[].concat(out.to).join(", ")} | ${out.subject} | ${info.response || ""}`,
       );
       return true;
     } catch (e) {
       console.error(
-        `[mail] attempt ${attempt} failed (${[].concat(msg.to).join(", ")}): ${e.message}`,
+        `[mail] attempt ${attempt} failed (${r} -> ${[].concat(out.to).join(", ")}): ${e.message}`,
       );
-      if (attempt === 1) await new Promise((r) => setTimeout(r, 1500));
+      if (attempt === 1) await new Promise((res) => setTimeout(res, 1500));
     }
   }
   return false;
@@ -171,17 +226,8 @@ function payLine(order) {
     : `${n} - awaiting payment`;
 }
 
-// Brand order ke products ke hisaab se: sirf mithai = Mithai House, sirf water = Evelyn One.
-// Mix ya purana order (category save nahi) = country se.
-const brandOf = (order) => {
-  const cats = new Set(
-    (Array.isArray(order.items) ? order.items : [])
-      .map((i) => i.category)
-      .filter(Boolean),
-  );
-  if (cats.size === 1) return cats.has("sweets") ? BRANDS.US : BRANDS.PK;
-  return BRANDS[order.country] || BRANDS.US;
-};
+// Brand country se: Pakistan = Evelyn One (PKR), USA = Mithai House (USD)
+const brandOf = (order) => BRANDS[regionOf(order.country)];
 
 function buildOrderEmail(order, { admin = false } = {}) {
   const brand = brandOf(order);
@@ -303,14 +349,19 @@ function buildOrderEmail(order, { admin = false } = {}) {
 }
 
 /* ------------------------- Public API ------------------------- */
-// order = database ki orders row. admins = ADMIN_EMAILS ki list.
+// order = database ki orders row. admins = us region ke admin emails.
 async function sendOrderMails(order, { admins = [] } = {}) {
-  const from = smtpUser();
+  const region = regionOf(order.country);
   const c = order.customer || {};
 
-  // Customer: checkout form wali email + signup/signin wali account email (agar alag ho)
+  // Customer ki email: checkout form wali. USA me signup/signin wali account email bhi (agar alag ho).
+  // Pakistan me sirf checkout wali Gmail.
   const seen = new Set();
-  const to = [order.email, c.email, c.account_email]
+  const to = (
+    region === "PK"
+      ? [order.email || c.email]
+      : [order.email, c.email, c.account_email]
+  )
     .map((e) => String(e || "").trim())
     .filter(
       (e) =>
@@ -323,10 +374,9 @@ async function sendOrderMails(order, { admins = [] } = {}) {
   if (to.length) {
     const m = buildOrderEmail(order);
     results.push(
-      deliver({
-        from: { name: m.brand.name, address: from },
+      sendRegional(region, {
+        fromName: m.brand.name,
         to,
-        replyTo: from,
         subject: m.subject,
         text: m.text,
         html: m.html,
@@ -338,10 +388,10 @@ async function sendOrderMails(order, { admins = [] } = {}) {
   if (adminTo.length) {
     const m = buildOrderEmail(order, { admin: true });
     results.push(
-      deliver({
-        from: { name: `${m.brand.name} Orders`, address: from },
+      sendRegional(region, {
+        fromName: `${m.brand.name} Orders`,
         to: adminTo,
-        replyTo: validEmail(order.email) ? order.email : from,
+        replyTo: validEmail(order.email) ? order.email : undefined,
         subject: m.subject,
         text: m.text,
         html: m.html,
@@ -351,7 +401,7 @@ async function sendOrderMails(order, { admins = [] } = {}) {
   return Promise.all(results);
 }
 
-module.exports = { sendOrderMails, buildOrderEmail, verify };
+module.exports = { sendOrderMails, buildOrderEmail, verify, sendRegional };
 
 /* ------------------------- Quick test -------------------------
    server folder me:   node orderEmail.js customer@gmail.com PK

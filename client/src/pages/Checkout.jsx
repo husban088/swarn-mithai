@@ -24,6 +24,7 @@ import {
   vAddress,
   vCity,
   vEmail,
+  vGmail,
   vName,
   vPhone,
   vPostal,
@@ -68,7 +69,7 @@ export default function Checkout() {
   const errs = {
     name: vName(f.name),
     phone: vPhone(f.phone, true),
-    email: vEmail(f.email),
+    email: country.code === "PK" ? vGmail(f.email) : vEmail(f.email),
     address: vAddress(f.address),
     city: vCity(f.city),
     postal: vPostal(f.postal),
@@ -115,7 +116,11 @@ export default function Checkout() {
       const fd = new FormData();
       fd.append("image", file);
       const r = await api("/upload/receipt", { method: "POST", body: fd });
-      setReceipt({ url: r.url, preview: URL.createObjectURL(file), name: file.name });
+      setReceipt({
+        url: r.url,
+        preview: URL.createObjectURL(file),
+        name: file.name,
+      });
       toast("Receipt uploaded.");
     } catch (err) {
       toast(err.message, "err");
@@ -140,10 +145,17 @@ export default function Checkout() {
     e.preventDefault();
     setSubmitted(true);
     if (hasErr) {
-      const first = ["name", "phone", "email", "address", "city", "postal"].find(
-        (k) => errs[k],
-      );
-      document.getElementById(`c-${first === "address" ? "addr" : first}`)?.focus();
+      const first = [
+        "name",
+        "phone",
+        "email",
+        "address",
+        "city",
+        "postal",
+      ].find((k) => errs[k]);
+      document
+        .getElementById(`c-${first === "address" ? "addr" : first}`)
+        ?.focus();
       return;
     }
     if (pay === "bank") {
@@ -152,10 +164,13 @@ export default function Checkout() {
           "Please upload your payment receipt first. Your order cannot be placed without it.",
           "err",
         );
-        document.getElementById("c-receipt")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        document
+          .getElementById("c-receipt")
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
-      if (!rcOk) return toast("Please confirm that your receipt is correct.", "err");
+      if (!rcOk)
+        return toast("Please confirm that your receipt is correct.", "err");
     }
     if (pay === "stripe" && !cfg.stripe)
       return toast("Card payment is not available yet.", "err");
@@ -329,7 +344,7 @@ export default function Checkout() {
             </div>
             <div>
               <label className="label" htmlFor="c-email">
-                Email
+                {country.code === "PK" ? "Gmail" : "Email"}
               </label>
               <input
                 id="c-email"
@@ -339,10 +354,20 @@ export default function Checkout() {
                 onChange={set("email")}
                 onBlur={blur("email")}
                 autoComplete="email"
-                placeholder="you@example.com"
+                placeholder={
+                  country.code === "PK"
+                    ? "yourname@gmail.com"
+                    : "you@example.com"
+                }
                 aria-invalid={msg("email") ? "true" : undefined}
               />
               <FieldError msg={msg("email")} />
+              {country.code === "PK" && !msg("email") && (
+                <p className="mt-1 text-xs text-neutral-500">
+                  Gmail address only. Your order number, cart and checkout
+                  details will be emailed to this Gmail.
+                </p>
+              )}
             </div>
             <div>
               <label className="label" htmlFor="c-addr">
@@ -486,7 +511,9 @@ export default function Checkout() {
                 </a>
 
                 <div id="c-receipt">
-                  <div className="label">Upload your payment receipt (required)</div>
+                  <div className="label">
+                    Upload your payment receipt (required)
+                  </div>
                   <input
                     ref={rcRef}
                     type="file"

@@ -5,7 +5,6 @@ const path = require("path");
 const crypto = require("crypto");
 const fs = require("fs");
 const multer = require("multer");
-const nodemailer = require("nodemailer");
 const { createClient } = require("@supabase/supabase-js");
 const { STATUSES, buildStats } = require("./stats");
 const bg = require("./bg");
@@ -91,29 +90,18 @@ const scopeOrders = (rows, sc) =>
   (rows || []).map((o) => scopeOrder(o, sc)).filter(Boolean);
 
 // ---------- Mail ----------
-const mailer =
-  process.env.SMTP_USER && process.env.SMTP_PASS
-    ? nodemailer.createTransport({
-        host: process.env.SMTP_HOST || "smtp.gmail.com",
-        port: Number(process.env.SMTP_PORT || 465),
-        secure: Number(process.env.SMTP_PORT || 465) === 465,
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      })
-    : null;
+// Har region ka apna sender (orderEmail.js): Pakistan = wjahattahir@gmail.com, USA = shahidmahmood73@hotmail.com
+const orderMail = require("./orderEmail");
 
-async function sendMail(to, subject, html) {
-  if (!mailer)
-    return console.warn("[mail] SMTP set nahi hai, email skip hui:", subject);
-  try {
-    await mailer.sendMail({
-      from: process.env.MAIL_FROM || process.env.SMTP_USER,
-      to,
-      subject,
-      html,
-    });
-  } catch (e) {
-    console.error("[mail] failed:", e.message);
-  }
+async function sendMail(to, subject, html, country, opts = {}) {
+  const pk = normCountry(country) === "PK";
+  return orderMail.sendRegional(pk ? "PK" : "US", {
+    fromName: pk ? "Evelyn One" : "Mithai House",
+    to,
+    subject,
+    html,
+    ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
+  });
 }
 const wrapMail = (title, body, brand = "Mithai House") => `
 <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;border:1px solid #B9D6FF;border-radius:14px;overflow:hidden">
@@ -626,6 +614,7 @@ app.post(
             : "<p>Your account is ready. Browse our handcrafted mithai and place your first order anytime.</p>",
           brandName,
         ),
+        pk ? "PK" : "US",
       ),
     );
     res.json({
@@ -1234,6 +1223,10 @@ app.delete(
 );
 
 // ---------- Contact ----------
+const CONTACT_TO = {
+  PK: "wjahattahir@gmail.com",
+  US: "shahidmahmood73@hotmail.com",
+};
 app.post(
   "/api/contact",
   ah(async (req, res) => {
@@ -1243,22 +1236,19 @@ app.post(
         .status(400)
         .json({ error: "Fill in name, a valid email and your message." });
     const cc = normCountry(country);
-    const regional = adminsOf(cc);
-    const to = regional.length
-      ? regional.join(",")
-      : ADMINS.length
-        ? ADMINS.join(",")
-        : process.env.SMTP_USER;
-    if (to)
-      await sendMail(
-        to,
-        `Contact message from ${name.trim()}`,
-        wrapMail(
-          "New contact message",
-          `<p><b>${esc(name)}</b> (${esc(email)})</p><p>${esc(message).replace(/\n/g, "<br>")}</p>`,
-          cc === "PK" ? "Evelyn One" : "Mithai House",
-        ),
-      );
+    // Pakistan ka contact message -> wjahattahir@gmail.com, USA ka -> shahidmahmood73@hotmail.com
+    const to = CONTACT_TO[cc];
+    await sendMail(
+      to,
+      `Contact message from ${name.trim()} (${cc === "PK" ? "Pakistan" : "USA"})`,
+      wrapMail(
+        "New contact message",
+        `<p><b>${esc(name)}</b> (${esc(email)})</p><p>${esc(message).replace(/\n/g, "<br>")}</p>`,
+        cc === "PK" ? "Evelyn One" : "Mithai House",
+      ),
+      cc,
+      { replyTo: email.trim() },
+    );
     res.json({ ok: true });
   }),
 );
@@ -1435,6 +1425,7 @@ app.patch(
             `<p>Hi ${esc(ord.customer?.name || "")}, your order <b>#${ord.id.slice(0, 8).toUpperCase()}</b> is now <b>${esc(status)}</b>.</p>`,
             ord.country === "PK" ? "Evelyn One" : "Mithai House",
           ),
+          ord.country,
         ),
       );
     res.json({ ok: true });
