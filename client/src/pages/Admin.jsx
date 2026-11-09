@@ -180,12 +180,15 @@ function ProductsTab() {
 
   const del = async (p) => {
     if (!window.confirm(`Delete "${p.name}"? This cannot be undone.`)) return;
+    // Foran list se hata do (server ka intezar nahi); masla aaye to wapis aa jata hai
+    const prev = rows;
+    setRows((r) => r.filter((x) => x.id !== p.id));
     try {
       await api(`/admin/products/${p.id}`, { method: "DELETE" });
       toast("Product deleted");
-      load();
       reload();
     } catch (e) {
+      setRows(prev);
       toast(e.message, "err");
     }
   };

@@ -43,6 +43,6 @@ export const tinyOf = (url) => {
   if (!url) return null;
   if (/res\.cloudinary\.com\/.+\/image\/upload\//.test(url))
     return cld(url, "f_auto,q_auto:low,w_32");
-  const m = /^\/hero\/([^/]+\.jpg)$/.exec(url);
+  const m = /^\/hero\/([^/]+\.jpe?g)$/.exec(url);
   return m ? `/hero/blur/${m[1]}` : null;
 };

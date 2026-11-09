@@ -23,6 +23,7 @@ import {
   money,
 } from "./config";
 import { lineKey, pickVariant, variantsOf, viewOf } from "./lib/variants";
+import { onBootCode, takeBootResult } from "./lib/geoBoot";
 
 /* ------------------------------------------------------------------ */
 /* Country detection (IP based, VPN friendly)                          */
@@ -92,6 +93,14 @@ function detectCountry() {
     (Intl.DateTimeFormat().resolvedOptions().timeZone || "") === "Asia/Karachi"
       ? "PK"
       : "US";
+  // Pehli baar: index.html ki boot script ne jo asli IP country nikali wahi lo (dobara network call nahi)
+  return takeBootResult().then((boot) => {
+    if (boot) return boot;
+    return detectByVotes(tzGuess);
+  });
+}
+
+function detectByVotes(tzGuess) {
   return new Promise((resolve) => {
     const votes = { PK: 0, US: 0 };
     let total = 0;
@@ -174,12 +183,9 @@ function GeoProvider({ children }) {
   // Pichli detected country se foran page dikhao, phir background me verify karo
   const [code, setCode] = useState(() => {
     if (SITE_COUNTRY) return SITE_COUNTRY; // alag link: country fix hai
-    try {
-      const c = localStorage.getItem("swarn_country");
-      return COUNTRIES[c] ? c : null;
-    } catch {
-      return null;
-    }
+    // Purani saved country par bharosa nahi (VPN badal chuka ho sakta hai): sirf boot script ki pakki country.
+    const g = window.__geo;
+    return g && g.real && COUNTRIES[g.code] ? g.code : null;
   });
   const busy = useRef(false);
 
@@ -249,6 +255,13 @@ function GeoProvider({ children }) {
       clearInterval(t);
     };
   }, [refresh]);
+
+  // Agar IP detect na ho paye (internet/block): boot script 3.5 sec baad pichli country ya timezone se site khol deti hai.
+  // Detect hote hi (background me) sahi country lag jati hai.
+  useEffect(() => {
+    if (code || SITE_COUNTRY) return;
+    return onBootCode((c) => setCode((prev) => prev || c));
+  }, [code]);
 
   // Pakistan me Mithai sirf allowed email (server decide karta hai: user.pkMithai) ko dikhti hai.
   // Baqi sab ko Pakistan me sirf Evelyn One (water).

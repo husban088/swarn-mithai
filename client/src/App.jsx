@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useLayoutEffect, useRef } from "react";
+import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Navigate,
   Route,
@@ -10,11 +10,11 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import CartDrawer from "./components/CartDrawer";
 import WhatsAppButton from "./components/WhatsAppButton";
-import { Mark } from "./components/Logo";
 import { useAuth, useGeo } from "./store";
-import { brandFor } from "./config";
+import { SITE_COUNTRY, brandFor } from "./config";
 import Home from "./pages/Home";
 import { track } from "./lib/nav";
+import { bootCode, onBootCode } from "./lib/geoBoot";
 
 // Baqi pages sirf tab download hote hain jab khulen (pehli load bohat halki rehti hai).
 // Admin wale pages me PDF/zip libraries hain, wo ab aam customers ko download hi nahi hoti.
@@ -160,23 +160,28 @@ function ScrollProgress() {
   );
 }
 
+// Splash: sahi country ka logo hi dikhao. Country pakki hone tak sirf spinner (galat logo kabhi nahi).
 function Splash() {
+  const { country: geo } = useGeo();
+  const [code, setCode] = useState(() => SITE_COUNTRY || bootCode());
+  useEffect(() => {
+    if (code) return;
+    return onBootCode(setCode);
+  }, [code]);
+  const b = code ? brandFor(geo?.code || code) : null;
   return (
     <div className="grain relative grid min-h-screen place-items-center overflow-hidden bg-royal">
-      <div className="pointer-events-none absolute h-96 w-96 animate-glow rounded-full bg-champ-400/25 blur-3xl" />
-      <div className="relative text-center">
-        <div className="relative mx-auto grid h-28 w-28 place-items-center">
-          <div className="ring-loader absolute inset-0 !h-28 !w-28" />
-          <div className="w-fit animate-spinSlow">
-            <Mark size={72} />
-          </div>
-        </div>
-        <p className="mt-6 font-display text-3xl font-semibold text-champ-200">
-          Finding your location…
-        </p>
-        <p className="mt-1 text-xs tracking-wide text-champ-100/60">
-          Prices and products are set for your country
-        </p>
+      <div className="pointer-events-none absolute h-96 w-96 rounded-full bg-champ-400/25 blur-3xl" />
+      <div className="relative px-6 text-center">
+        {b && (
+          <img
+            src={b.logoLight || b.logo}
+            alt={b.name}
+            draggable="false"
+            className="mx-auto h-20 w-auto max-w-[78vw] select-none object-contain drop-shadow-[0_10px_30px_rgba(29,127,224,0.45)] sm:h-24"
+          />
+        )}
+        <div className="ring-loader mx-auto mt-7 !h-11 !w-11" />
       </div>
     </div>
   );
@@ -194,6 +199,7 @@ export default function App() {
     if (!country) return;
     const pk = country.code === "PK";
     const b = brandFor(country.code);
+    if (window.__setFavicon) window.__setFavicon(country.code); // tab icon: PK = Evelyn One, US = Mithai House
     document.title = pk
       ? `${b.name} - Pure Drinking Water`
       : "Mithai House - Luxury Mithai & Special Event Boxes";

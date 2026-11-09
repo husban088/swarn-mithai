@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { uploadDirect } from "../lib/upload";
+import { uploadDirect, uploadMany } from "../lib/upload";
 import {
   ArrowLeft,
   Check,
@@ -168,27 +168,29 @@ export default function AdminProductForm() {
       return { ...s, images, image_url: images[0] || "" };
     });
 
+  // Saari images ek saath (3 parallel) aur browser me chhoti ho kar upload hoti hain: pehle se kai guna tez
   const uploadFiles = async (fileList) => {
-    const files = [...(fileList || [])];
+    let files = [...(fileList || [])];
     if (!files.length) return;
-    setUp(true);
-    for (const file of files) {
-      if (!/^image\//.test(file.type)) {
-        toast("Only image files", "err");
-        continue;
-      }
-      if ((fRef.current.images || []).length >= MAX_IMAGES) {
-        toast(`Maximum ${MAX_IMAGES} images`, "err");
-        break;
-      }
-      try {
-        const r = await uploadDirect(file, { signPath: "/admin/upload-sign" });
-        setImages((l) => [...l, r.url]);
-        toast("Image uploaded");
-      } catch (err) {
-        toast(err.message, "err");
-      }
+    const bad = files.filter((x) => !/^image\//.test(x.type));
+    if (bad.length) toast("Only image files", "err");
+    files = files.filter((x) => /^image\//.test(x.type));
+    const room = MAX_IMAGES - (fRef.current.images || []).length;
+    if (files.length > room) toast(`Maximum ${MAX_IMAGES} images`, "err");
+    files = files.slice(0, Math.max(0, room));
+    if (!files.length) {
+      if (fileRef.current) fileRef.current.value = "";
+      return;
     }
+    setUp(true);
+    const res = await uploadMany(files, { signPath: "/admin/upload-sign" });
+    const urls = res.filter((r) => r?.ok).map((r) => r.url);
+    if (urls.length) {
+      setImages((l) => [...l, ...urls.filter((u) => !l.includes(u))]);
+      toast(urls.length > 1 ? `${urls.length} images uploaded` : "Image uploaded");
+    }
+    const fail = res.find((r) => r && !r.ok);
+    if (fail) toast(fail.error, "err");
     setUp(false);
     if (fileRef.current) fileRef.current.value = "";
   };
@@ -282,26 +284,30 @@ export default function AdminProductForm() {
       }),
     }));
   const uploadVarImgs = async (i, fileList) => {
-    const files = [...(fileList || [])];
+    let files = [...(fileList || [])];
+    if (!files.length) return;
+    const bad = files.filter((x) => !/^image\//.test(x.type));
+    if (bad.length) toast("Only image files", "err");
+    files = files.filter((x) => /^image\//.test(x.type));
+    const room =
+      VAR_MAX_IMAGES - varImgs(fRef.current.variants?.[i]).length;
+    if (files.length > room)
+      toast(`Har option ki max ${VAR_MAX_IMAGES} images`, "err");
+    files = files.slice(0, Math.max(0, room));
     if (!files.length) return;
     setVImgUp(i);
-    for (const file of files) {
-      if (!/^image\//.test(file.type)) {
-        toast("Only image files", "err");
-        continue;
-      }
-      if (varImgs(fRef.current.variants?.[i]).length >= VAR_MAX_IMAGES) {
-        toast(`Har option ki max ${VAR_MAX_IMAGES} images`, "err");
-        break;
-      }
-      try {
-        const r = await uploadDirect(file, { signPath: "/admin/upload-sign" });
-        setVarImgs(i, (l) => (l.includes(r.url) ? l : [...l, r.url]));
-        toast("Option image uploaded");
-      } catch (err) {
-        toast(err.message, "err");
-      }
+    const res = await uploadMany(files, { signPath: "/admin/upload-sign" });
+    const urls = res.filter((r) => r?.ok).map((r) => r.url);
+    if (urls.length) {
+      setVarImgs(i, (l) => [...l, ...urls.filter((u) => !l.includes(u))]);
+      toast(
+        urls.length > 1
+          ? `${urls.length} option images uploaded`
+          : "Option image uploaded",
+      );
     }
+    const fail = res.find((r) => r && !r.ok);
+    if (fail) toast(fail.error, "err");
     setVImgUp(-1);
   };
   const removeVarImg = (i, idx) =>

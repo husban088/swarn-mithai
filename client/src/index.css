@@ -468,3 +468,37 @@ main .backdrop-blur-md {
     opacity: 0.6;
   }
 }
+
+/* ---------------- Extra speed (Pakistan + USA, mobile + desktop) ---------------- */
+/* Bade blur layers (blur-3xl = 48px) phone / tablet par bohat bhari hote hain: chhota blur, wahi look */
+@media (max-width: 1023px), (hover: none) {
+  .blur-3xl,
+  .blur-2xl {
+    --tw-blur: blur(20px) !important;
+  }
+  main .backdrop-blur-lg,
+  main .backdrop-blur-xl,
+  main .backdrop-blur-2xl {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .animate-floaty {
+    animation: none;
+  }
+}
+/* Footer screen ke neeche hota hai: jab tak nazar na aaye browser use paint nahi karta */
+footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 520px;
+}
+/* Jinhon ne device me "reduce motion" on kiya hai unke liye saari animation band */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -38,11 +38,30 @@
         display: block;
         width: 44px;
         height: 44px;
-        margin: 0 auto 14px;
+        margin: 22px auto 0;
         border: 3px solid rgba(191, 220, 250, 0.25);
         border-top-color: #4aa3f0;
         border-radius: 50%;
         animation: bootspin 0.8s linear infinite;
+      }
+      #boot img {
+        display: block;
+        margin: 0 auto;
+        width: auto;
+        height: 84px;
+        max-width: 78vw;
+        object-fit: contain;
+        animation: bootfade 0.5s ease both;
+      }
+      @keyframes bootfade {
+        from {
+          opacity: 0;
+          transform: translateY(8px) scale(0.96);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
       }
       @keyframes bootspin {
         to {
@@ -54,9 +73,147 @@
   <body>
     <div id="root">
       <div id="boot">
-        <div><i></i>Loading…</div>
+        <div>
+          <img id="boot-logo" alt="" hidden />
+          <i></i>
+        </div>
       </div>
     </div>
+    <script>
+      // React load hone se pehle hi sahi country ka logo:
+      //   Pakistan = Evelyn One, USA = Mithai House.
+      // Galat logo kabhi nahi dikhta: jab tak country pakki na ho sirf spinner chalta hai.
+      // Priority: 1) alag link (VITE_SITE_COUNTRY) 2) ?country=PK/US
+      //           3) admin (wjahattahir) ka dropdown choice 4) asli IP (VPN friendly)
+      (function () {
+        var ADMINS = ["wjahattahir@gmail.com"];
+        var geo = (window.__geo = { code: null, real: false, promise: null });
+        // Browser tab ka icon: Pakistan = Evelyn One, USA = Mithai House (React bhi country badalne par isay chalata hai)
+        window.__setFavicon = function (c) {
+          try {
+            var n = c === "PK" ? "evelyn-one" : "mithai-house";
+            var old = document.querySelectorAll('link[rel~="icon"],link[rel="apple-touch-icon"]');
+            for (var i = 0; i < old.length; i++) old[i].parentNode.removeChild(old[i]);
+            var add = function (rel, href, type, sizes) {
+              var l = document.createElement("link");
+              l.rel = rel;
+              l.href = href;
+              if (type) l.type = type;
+              if (sizes) l.setAttribute("sizes", sizes);
+              document.head.appendChild(l);
+            };
+            add("icon", "/favicon/" + n + "-32.png", "image/png", "32x32");
+            add("icon", "/favicon/" + n + "-16.png", "image/png", "16x16");
+            add("icon", "/favicon/" + n + "-192.png", "image/png", "192x192");
+            add("shortcut icon", "/favicon/" + n + ".ico");
+            add("apple-touch-icon", "/favicon/" + n + "-apple-touch-icon.png", "", "180x180");
+          } catch (e) {}
+        };
+        function show(c) {
+          window.__setFavicon(c);
+          try {
+            var img = document.getElementById("boot-logo");
+            img.src = c === "PK" ? "/brand/evelyn-one-light.svg" : "/brand/mithai-house-light.png";
+            img.alt = c === "PK" ? "Evelyn One" : "Mithai House";
+            img.hidden = false;
+          } catch (e) {}
+        }
+        function ls(k) {
+          try {
+            return localStorage.getItem(k);
+          } catch (e) {
+            return null;
+          }
+        }
+        function sure() {
+          var site = "%VITE_SITE_COUNTRY%".toUpperCase();
+          if (/^(PK|US)$/.test(site)) return site;
+          var q = (location.search.match(/[?&]country=([a-zA-Z]{2})/) || [])[1];
+          if (q && /^(PK|US)$/i.test(q)) return q.toUpperCase();
+          try {
+            var email = String(
+              (JSON.parse(ls("swarn_session")) || {}).user.email || ""
+            ).toLowerCase();
+            var o = ls("swarn_country_override");
+            if (ADMINS.indexOf(email) > -1 && (o === "PK" || o === "US")) return o;
+          } catch (e) {}
+          return "";
+        }
+        var known = sure();
+        if (known) {
+          geo.code = known;
+          geo.real = true;
+          geo.promise = Promise.resolve({ code: known, real: true });
+          show(known);
+          return;
+        }
+        // IP se asli country (VPN ke saath bhi sahi). Pehle 2 source jo ek jawab den wahi final.
+        var api = "%VITE_API_URL%";
+        if (api.charAt(0) === "%") api = "";
+        api = api.replace(/\/+$/, "");
+        var jobs = [
+          ["https://ipwho.is/", function (d) { return d.country_code; }],
+          ["https://api.country.is/", function (d) { return d.country; }],
+          ["https://get.geojs.io/v1/ip/country.json", function (d) { return d.country; }],
+          [api + "/api/geo", function (d) { return d.country; }],
+        ];
+        geo.promise = new Promise(function (resolve) {
+          var votes = { PK: 0, US: 0 }, total = 0, left = jobs.length, done = false, t1 = null;
+          function finish(code, real) {
+            if (done) return;
+            done = true;
+            clearTimeout(t1);
+            clearTimeout(hard);
+            if (!code) {
+              if (total && votes.PK !== votes.US) {
+                code = votes.PK > votes.US ? "PK" : "US";
+                real = true;
+              } else if (total) {
+                code = "US";
+                real = true;
+              } else {
+                // Internet/IP sources fail: pichli country ya timezone ka andaza (React baad me verify karega)
+                var c = ls("swarn_country");
+                code =
+                  c === "PK" || c === "US"
+                    ? c
+                    : (Intl.DateTimeFormat().resolvedOptions().timeZone || "") === "Asia/Karachi"
+                      ? "PK"
+                      : "US";
+                real = false;
+              }
+            }
+            geo.code = code;
+            geo.real = real;
+            show(code);
+            resolve({ code: code, real: real });
+          }
+          var hard = setTimeout(function () { finish(); }, 3500);
+          jobs.forEach(function (j) {
+            var ctrl = window.AbortController ? new AbortController() : null;
+            var to = setTimeout(function () { if (ctrl) ctrl.abort(); }, 3200);
+            var sep = j[0].indexOf("?") > -1 ? "&" : "?";
+            fetch(j[0] + sep + "_=" + Date.now(), { cache: "no-store", signal: ctrl && ctrl.signal })
+              .then(function (r) { return r.json(); })
+              .then(function (d) {
+                var c = String(j[1](d) || "").toUpperCase();
+                if (!c) throw 0;
+                var k = c === "PK" ? "PK" : "US";
+                votes[k] += 1;
+                total += 1;
+                if (votes[k] >= 2) finish(k, true);
+                else if (!t1) t1 = setTimeout(function () { finish(); }, 700);
+              })
+              .catch(function () {})
+              .then(function () {
+                clearTimeout(to);
+                left -= 1;
+                if (left === 0) finish();
+              });
+          });
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

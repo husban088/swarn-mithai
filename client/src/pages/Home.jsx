@@ -10,9 +10,10 @@ import HeroLuxury from "../components/HeroLuxury";
 import HighlightCards from "../components/HighlightCards";
 import CategoryCards from "../components/CategoryCards";
 import EventBanner from "../components/EventBanner";
+import MenuShowcase from "../components/MenuShowcase";
 import SaleBanner from "../components/SaleBanner";
 import { BrandMark } from "../components/Logo";
-import { VARIETIES, brandFor } from "../config";
+import { brandFor } from "../config";
 import { FAQS } from "../content";
 import useContent from "../useContent";
 import { useGeo, useShop } from "../store";
@@ -204,40 +205,7 @@ export default function Home() {
       </section>
 
       {/* ============ VARIETIES ============ */}
-      {sweets && (
-        <section className="container-x pb-20">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <span className="eyebrow">Our menu</span>
-            <h2 className="title-lg mt-3">
-              20 signature <span className="text-champ-600">varieties</span>
-            </h2>
-            <p className="mt-3 text-neutral-600">
-              Tap any mithai to see it in the shop.
-            </p>
-          </Reveal>
-          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {VARIETIES.map((v, i) => (
-              <Reveal key={v} delay={(i % 5) * 60}>
-                <Link
-                  to={`/shop?q=${encodeURIComponent(v)}`}
-                  className="group relative flex h-full items-center gap-3 overflow-hidden rounded-2xl border border-champ-200 bg-white px-4 py-3.5 transition duration-500 hover:-translate-y-1.5 hover:border-champ-400 hover:bg-royal hover:shadow-xl hover:shadow-champ-300/50"
-                >
-                  <span className="num-badge text-3xl transition duration-500 group-hover:scale-110">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate font-display text-xl font-bold text-royal transition duration-500 group-hover:text-champ-100">
-                    {v}
-                  </span>
-                  <ArrowRight
-                    size={15}
-                    className="-translate-x-2 text-champ-300 opacity-0 transition duration-500 group-hover:translate-x-0 group-hover:opacity-100"
-                  />
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-      )}
+      {sweets && <MenuShowcase />}
 
       {/* ============ EVENTS / SPECIAL BOX ============ */}
       <EventBanner variant="full" className="" />

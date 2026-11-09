@@ -29,7 +29,7 @@
       ]
     },
     {
-      "source": "/(hero|events|brand|boxes)/(.*)",
+      "source": "/(hero|events|brand|boxes|favicon)/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
