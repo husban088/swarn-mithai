@@ -4,6 +4,7 @@ import {
   ArrowRight,
   ArrowUp,
   ArrowUpRight,
+  Code2,
   Droplets,
   Gift,
   Mail,
@@ -153,6 +154,21 @@ const CSS = `
 .ft-top:hover .arr{transform:translateY(-3px)}
 .ft-top:active{transform:scale(.92)}
 
+.ft-credit{position:relative;display:inline-flex;border-radius:9999px;padding:1.5px;text-decoration:none;isolation:isolate;
+  background:conic-gradient(from var(--a),rgba(61,155,234,.2),#bfe0ff,rgba(61,155,234,.2) 35%,rgba(61,155,234,.2) 60%,#3d9bea,#eaf4ff,rgba(61,155,234,.2));animation:ftSpinA 5s linear infinite;
+  box-shadow:0 10px 30px -14px rgba(61,155,234,.9);transition:transform .45s cubic-bezier(.2,.9,.25,1.3),box-shadow .4s ease}
+.ft-credit-in{position:relative;display:inline-flex;align-items:center;gap:10px;overflow:hidden;border-radius:9999px;padding:9px 18px 9px 10px;font-size:13px;font-weight:600;color:rgba(234,244,255,.85);
+  background:linear-gradient(135deg,#0a1630,#050914)}
+.ft-credit-in::after{content:"";position:absolute;top:0;bottom:0;width:32%;left:-60%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(191,224,255,.3),transparent);transform:skewX(-18deg);animation:ftSweep2 4.5s ease-in-out 1.5s infinite}
+.ft-credit-gem{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9999px;color:#fff;background:linear-gradient(135deg,#3d9bea,#0a3a78);box-shadow:0 0 14px rgba(61,155,234,.8);transition:transform .5s cubic-bezier(.2,.9,.25,1.4)}
+.ft-credit-gem svg{width:15px;height:15px}
+.ft-credit b{font-family:"Cormorant Garamond",Georgia,serif;font-size:20px;line-height:1;font-weight:700;letter-spacing:.06em;background:linear-gradient(100deg,#5fb0f5,#ffffff 40%,#8cc3f5 60%,#5fb0f5);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:ftTextShine 5s linear infinite}
+@keyframes ftTextShine{to{background-position:-250% 0}}
+.ft-credit .arr{width:14px;height:14px;color:#8cc3f5;transition:transform .4s ease}
+.ft-credit:hover,.ft-credit:focus-visible{transform:translateY(-4px) scale(1.04);box-shadow:0 18px 36px -12px rgba(61,155,234,1);outline:none}
+.ft-credit:hover .ft-credit-gem{transform:rotate(-12deg) scale(1.15)}
+.ft-credit:hover .arr{transform:translate(3px,-3px)}
+.ft-credit:active{transform:scale(.96)}
 @media (hover:none){.ft::before{display:none}}
 @media (max-width:640px){.ft-cta,.ft-cta-in{border-radius:1.5rem}.ft-h{font-size:24px}}
 @media (prefers-reduced-motion:reduce){.ft *,.ft *::before,.ft *::after{animation:none!important}}
@@ -555,6 +571,22 @@ export default function Footer() {
               © {new Date().getFullYear()} {brand.name}. All rights reserved.
             </span>
           </div>
+          <a
+            href="https://pantrix-flax.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ft-credit"
+            aria-label="Website made by Pantrix. Opens the Pantrix portfolio in a new tab"
+            title="View Pantrix portfolio"
+          >
+            <span className="ft-credit-in">
+              <span className="ft-credit-gem" aria-hidden="true">
+                <Code2 />
+              </span>
+              Website made by <b>Pantrix</b>
+              <ArrowUpRight className="arr" />
+            </span>
+          </a>
           <button
             type="button"
             aria-label="Back to top"
