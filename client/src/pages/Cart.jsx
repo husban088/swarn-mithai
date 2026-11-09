@@ -5,6 +5,7 @@ import { Thumb } from "../components/ProductCard";
 import { useGeo, useShop } from "../store";
 
 // Sirf cart: items, quantity, total. Delivery details aur payment /checkout page par hain.
+// Fully responsive: 320px phone se lekar bade desktop tak (USA + Pakistan dono).
 export default function Cart() {
   const { country, fmt } = useGeo();
   const { lines, total, count, setQty, remove, cartBusy, loading } = useShop();
@@ -19,15 +20,15 @@ export default function Cart() {
 
   if (!lines.length) {
     return (
-      <div className="container-x grid min-h-[60vh] place-items-center py-16 text-center">
+      <div className="container-x grid min-h-[60vh] place-items-center overflow-x-hidden py-12 text-center sm:py-16">
         <div className="animate-fadeUp">
-          <span className="mx-auto grid h-24 w-24 place-items-center rounded-full border border-champ-300 bg-champ-100/50 text-champ-600">
-            <ShoppingBag size={42} />
+          <span className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-champ-300 bg-champ-100/50 text-champ-600 sm:h-24 sm:w-24">
+            <ShoppingBag size={38} />
           </span>
-          <h1 className="mt-5 font-display text-4xl font-bold text-royal sm:text-5xl">
+          <h1 className="mt-5 break-words font-display text-3xl font-bold text-royal sm:text-5xl">
             Your cart is empty
           </h1>
-          <Link to="/shop" className="btn-gold mt-7">
+          <Link to="/shop" className="btn-gold mt-6 sm:mt-7">
             Browse products
           </Link>
         </div>
@@ -36,7 +37,7 @@ export default function Cart() {
   }
 
   return (
-    <div>
+    <div className="overflow-x-clip">
       <PageHero
         eyebrow="Shopping cart"
         title="Your"
@@ -44,39 +45,43 @@ export default function Cart() {
         crumb="Cart"
         text="Review your items, change quantities, then continue to checkout."
       />
-      <div className="container-x grid gap-8 py-10 sm:py-12 lg:grid-cols-[1.4fr_1fr]">
+      <div className="container-x grid gap-6 py-8 sm:gap-8 sm:py-12 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)] lg:items-start">
         {/* Items (round loader qty/delete par) */}
-        <div className="relative">
-          <div className="space-y-4">
+        <div className="relative min-w-0">
+          <div className="space-y-3 sm:space-y-4">
             {lines.map((l, i) => (
               <div
                 key={l.id}
                 style={{ animationDelay: `${i * 70}ms` }}
-                className="group flex animate-rowIn gap-3 rounded-3xl border border-gold-100 bg-white p-3 transition duration-500 hover:border-champ-300 hover:shadow-xl hover:shadow-champ-200/40 sm:gap-4 sm:p-4"
+                className="group flex animate-rowIn gap-3 rounded-2xl border border-gold-100 bg-white p-3 transition duration-500 hover:border-champ-300 hover:shadow-xl hover:shadow-champ-200/40 sm:gap-4 sm:rounded-3xl sm:p-4"
               >
-                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl sm:h-24 sm:w-24">
+                <div className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl sm:h-28 sm:w-28 sm:rounded-2xl">
                   <Thumb p={l.product} />
                 </div>
-                <div className="flex min-w-0 flex-1 flex-col justify-between gap-2">
-                  <div className="flex justify-between gap-2">
+                <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="truncate font-display text-xl font-bold text-royal sm:text-2xl">
+                      <div className="line-clamp-2 break-words font-display text-lg font-bold leading-tight text-royal sm:text-2xl">
                         {l.product.name}
                       </div>
-                      <div className="text-xs text-neutral-500">
-                        {l.product.unit} · {fmt(l.product.price)}
+                      <div className="mt-1 flex flex-wrap items-center gap-x-1.5 text-xs text-neutral-500">
+                        <span className="break-words">{l.product.unit}</span>
+                        <span aria-hidden="true">·</span>
+                        <span className="whitespace-nowrap">
+                          {fmt(l.product.price)}
+                        </span>
                       </div>
                     </div>
                     <button
                       onClick={() => remove(l.id)}
                       aria-label="Remove"
-                      className="self-start rounded-full p-1.5 text-neutral-400 transition duration-300 hover:rotate-12 hover:bg-red-50 hover:text-red-600"
+                      className="-mr-1 -mt-1 shrink-0 rounded-full p-2 text-neutral-400 transition duration-300 hover:rotate-12 hover:bg-red-50 hover:text-red-600"
                     >
                       <Trash2 size={18} />
                     </button>
                   </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1 rounded-full border border-gold-200">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                    <div className="flex shrink-0 items-center gap-1 rounded-full border border-gold-200">
                       <button
                         onClick={() => setQty(l.id, l.qty - 1)}
                         aria-label="Decrease"
@@ -86,7 +91,7 @@ export default function Cart() {
                       </button>
                       <span
                         key={l.qty}
-                        className="w-7 animate-pop text-center text-sm font-bold"
+                        className="min-w-[1.75rem] animate-pop text-center text-sm font-bold"
                       >
                         {l.qty}
                       </span>
@@ -98,7 +103,7 @@ export default function Cart() {
                         <Plus size={14} />
                       </button>
                     </div>
-                    <span className="font-extrabold text-royal">
+                    <span className="whitespace-nowrap text-base font-extrabold text-royal sm:text-lg">
                       {fmt(l.qty * l.product.price)}
                     </span>
                   </div>
@@ -119,27 +124,27 @@ export default function Cart() {
         </div>
 
         {/* Summary */}
-        <aside className="relative h-fit overflow-hidden rounded-3xl border border-champ-300 bg-gradient-to-b from-white to-champ-100/40 p-5 shadow-2xl shadow-champ-200/40 sm:p-6 lg:sticky lg:top-32">
-          <h2 className="font-display text-3xl font-bold text-royal">
+        <aside className="relative h-fit min-w-0 overflow-hidden rounded-2xl border border-champ-300 bg-gradient-to-b from-white to-champ-100/40 p-4 shadow-2xl shadow-champ-200/40 sm:rounded-3xl sm:p-6 lg:sticky lg:top-28">
+          <h2 className="font-display text-2xl font-bold text-royal sm:text-3xl">
             Order summary
           </h2>
-          <div className="mt-4 flex items-center justify-between text-sm text-neutral-600">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm text-neutral-600">
             <span>Items ({count})</span>
-            <span>{fmt(total)}</span>
+            <span className="whitespace-nowrap">{fmt(total)}</span>
           </div>
-          <div className="mt-3 flex items-center justify-between border-t border-champ-200 pt-4">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-champ-200 pt-4">
             <span className="text-sm text-neutral-600">
               Total ({country.currency})
             </span>
             <span
               key={total}
-              className="animate-pop text-3xl font-extrabold text-royal"
+              className="animate-pop whitespace-nowrap text-2xl font-extrabold text-royal sm:text-3xl"
             >
               {fmt(total)}
             </span>
           </div>
-          <p className="mt-4 flex items-center gap-2 rounded-xl bg-champ-100/60 px-3 py-2 text-xs text-royal">
-            <ShieldCheck size={14} className="shrink-0 text-champ-600" />
+          <p className="mt-4 flex items-start gap-2 rounded-xl bg-champ-100/60 px-3 py-2 text-xs leading-relaxed text-royal">
+            <ShieldCheck size={14} className="mt-0.5 shrink-0 text-champ-600" />
             <span>
               No account needed. Pay with cash on delivery, card or PayPal at
               checkout.

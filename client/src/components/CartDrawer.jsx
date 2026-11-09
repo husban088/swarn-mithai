@@ -67,17 +67,17 @@ export default function CartDrawer() {
         onClick={close}
       />
       <aside
-        className={`absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl ${closing ? "animate-slideOut" : "animate-slideIn"}`}
+        className={`absolute right-0 top-0 flex h-full w-full max-w-md flex-col overflow-hidden bg-white shadow-2xl ${closing ? "animate-slideOut" : "animate-slideIn"}`}
       >
         {/* Header */}
-        <div className="relative overflow-hidden bg-royal px-6 py-5 text-white">
+        <div className="relative overflow-hidden bg-royal px-4 py-4 text-white sm:px-6 sm:py-5">
           <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-champ-400/30 blur-2xl" />
           <div className="relative flex items-center justify-between">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-champ-300">
                 {brandFor(country.code).name}
               </span>
-              <h3 className="font-display text-3xl font-bold text-champ-100">
+              <h3 className="font-display text-2xl font-bold text-champ-100 sm:text-3xl">
                 Your cart
                 {count > 0 && (
                   <span className="ml-2 align-middle text-sm font-semibold text-champ-300">
@@ -89,7 +89,7 @@ export default function CartDrawer() {
             <button
               onClick={close}
               aria-label="Close cart"
-              className="grid h-10 w-10 place-items-center rounded-full border border-white/20 transition duration-300 hover:rotate-90 hover:bg-white/10"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/20 transition duration-300 hover:rotate-90 hover:bg-white/10"
             >
               <X size={18} />
             </button>
@@ -99,7 +99,7 @@ export default function CartDrawer() {
 
         {/* Body (loader overlay yahan ghoomta hai) */}
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <div className="flex-1 space-y-3 overflow-y-auto px-5 py-5">
+          <div className="flex-1 space-y-3 overflow-y-auto overscroll-contain px-3 py-4 sm:px-5 sm:py-5">
             {lines.length === 0 && (
               <div className="grid h-full place-items-center text-center">
                 <div className="animate-fadeUp">
@@ -122,19 +122,19 @@ export default function CartDrawer() {
               <div
                 key={l.id}
                 style={{ animationDelay: `${i * 70}ms` }}
-                className={`group flex animate-rowIn gap-4 rounded-2xl border bg-white p-3 transition duration-500 hover:border-champ-300 hover:shadow-lg hover:shadow-champ-200/40 ${flash === l.id ? "animate-flash border-champ-400" : "border-gold-100"}`}
+                className={`group flex animate-rowIn gap-3 rounded-2xl border bg-white p-3 sm:gap-4 transition duration-500 hover:border-champ-300 hover:shadow-lg hover:shadow-champ-200/40 ${flash === l.id ? "animate-flash border-champ-400" : "border-gold-100"}`}
               >
-                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl">
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl sm:h-20 sm:w-20">
                   <Thumb p={l.product} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate font-display text-xl font-bold text-royal">
+                  <div className="line-clamp-2 break-words font-display text-lg font-bold leading-tight text-royal sm:text-xl">
                     {l.product.name}
                   </div>
-                  <div className="text-xs text-neutral-500">
+                  <div className="break-words text-xs text-neutral-500">
                     {l.product.unit} · {fmt(l.product.price)}
                   </div>
-                  <div className="mt-2 flex items-center justify-between">
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
                     <div className="flex items-center gap-1 rounded-full border border-gold-200 bg-white">
                       <button
                         onClick={() => setQty(l.id, l.qty - 1)}
@@ -157,7 +157,7 @@ export default function CartDrawer() {
                         <Plus size={14} />
                       </button>
                     </div>
-                    <span className="text-sm font-extrabold text-royal">
+                    <span className="whitespace-nowrap text-sm font-extrabold text-royal">
                       {fmt(l.qty * l.product.price)}
                     </span>
                   </div>
@@ -165,7 +165,7 @@ export default function CartDrawer() {
                 <button
                   onClick={() => remove(l.id)}
                   aria-label="Remove"
-                  className="self-start rounded-full p-1.5 text-neutral-400 transition duration-300 hover:rotate-12 hover:bg-red-50 hover:text-red-600"
+                  className="-mr-1 -mt-1 shrink-0 self-start rounded-full p-2 text-neutral-400 transition duration-300 hover:rotate-12 hover:bg-red-50 hover:text-red-600"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -174,14 +174,14 @@ export default function CartDrawer() {
           </div>
 
           {lines.length > 0 && (
-            <div className="border-t border-champ-200 bg-gradient-to-b from-white to-champ-100/30 p-6">
-              <div className="mb-1 flex items-center justify-between">
+            <div className="border-t border-champ-200 bg-gradient-to-b from-white to-champ-100/30 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6 sm:pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+              <div className="mb-1 flex flex-wrap items-center justify-between gap-x-3">
                 <span className="text-sm text-neutral-600">
                   Subtotal ({country.currency})
                 </span>
                 <span
                   key={total}
-                  className="animate-pop text-2xl font-extrabold text-royal"
+                  className="animate-pop whitespace-nowrap text-xl font-extrabold text-royal sm:text-2xl"
                 >
                   {fmt(total)}
                 </span>
@@ -190,7 +190,7 @@ export default function CartDrawer() {
                 <ShieldCheck size={13} className="text-champ-500" />
                 No account needed · Pay on delivery
               </p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <Link
                   to="/cart"
                   onClick={close}
