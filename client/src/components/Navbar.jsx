@@ -25,7 +25,9 @@ export default function Navbar() {
   // Neeche scroll = top header + navbar chhup jaye, upar scroll = wapis aa jaye
   useEffect(() => {
     lastY.current = window.scrollY;
-    const on = () => {
+    let raf = 0;
+    const run = () => {
+      raf = 0;
       const y = Math.max(0, window.scrollY);
       const delta = y - lastY.current;
       setScrolled(y > 12);
@@ -34,9 +36,16 @@ export default function Navbar() {
       else if (delta < -6) setHidden(false);
       if (Math.abs(delta) > 6 || y <= 24) lastY.current = y;
     };
-    on();
+    // requestAnimationFrame: scroll par har frame me sirf ek baar chale
+    const on = () => {
+      if (!raf) raf = requestAnimationFrame(run);
+    };
+    run();
     window.addEventListener("scroll", on, { passive: true });
-    return () => window.removeEventListener("scroll", on);
+    return () => {
+      window.removeEventListener("scroll", on);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
   // Page badalne par navbar wapis dikhao
   useEffect(() => {

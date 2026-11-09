@@ -10,6 +10,9 @@ import HeroLuxury from "../components/HeroLuxury";
 import HighlightCards from "../components/HighlightCards";
 import CategoryCards from "../components/CategoryCards";
 import EventBanner from "../components/EventBanner";
+import AboutTeaser from "../components/AboutTeaser";
+import WhyChoose from "../components/WhyChoose";
+import ServicesShowcase from "../components/ServicesShowcase";
 import MenuShowcase from "../components/MenuShowcase";
 import SaleBanner from "../components/SaleBanner";
 import { BrandMark } from "../components/Logo";
@@ -211,147 +214,13 @@ export default function Home() {
       <EventBanner variant="full" className="" />
 
       {/* ============ ABOUT TEASER ============ */}
-      <section
-        id="story"
-        className="bg-gradient-to-b from-champ-100/60 to-[#f6f6f7] py-20"
-      >
-        <div className="container-x grid items-center gap-14 lg:grid-cols-2">
-          <Reveal>
-            <Tilt className="group mx-auto aspect-square w-full max-w-md rounded-[2.5rem] border border-champ-300 bg-royal p-3 shadow-2xl shadow-royal/30">
-              <div className="grain relative grid h-full w-full place-items-center overflow-hidden rounded-[2rem] bg-gradient-to-br from-royal-light via-royal to-royal-deep">
-                <div className="absolute inset-6 rounded-[1.6rem] border border-champ-300/40" />
-                <div className="text-center">
-                  <div className="mx-auto w-fit">
-                    <BrandMark size={160} />
-                  </div>
-                  <p className="mt-5 font-display text-4xl font-bold text-champ-200">
-                    {sweets ? "Since the first batch" : "Pure, every bottle"}
-                  </p>
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.3em] text-champ-400">
-                    {sweets
-                      ? "Handcrafted with patience"
-                      : "Tested and sealed fresh"}
-                  </p>
-                </div>
-              </div>
-            </Tilt>
-          </Reveal>
-          <Reveal delay={120}>
-            <span className="eyebrow">About {brand.name}</span>
-            <h2 className="title-lg mt-3">
-              {sweets ? (
-                <>
-                  Sweets the way{" "}
-                  <span className="text-champ-600">your elders</span> made them
-                </>
-              ) : (
-                <>
-                  Pure water, <span className="text-champ-600">sealed</span>{" "}
-                  fresh
-                </>
-              )}
-            </h2>
-            <p className="mt-5 leading-relaxed text-neutral-600">
-              {sweets
-                ? "Mithai House is the standard we cook to. Every piece is hand rolled in small batches with pure desi ghee, real khoya, whole nuts and saffron, then packed like a gift because that is what it is."
-                : "Evelyn One is the name families trust for clean drinking water. Every bottle is purified in several stages, tested and sealed before it ever leaves us."}
-            </p>
-            <p className="mt-4 leading-relaxed text-neutral-600">
-              {sweets
-                ? "No shortcuts, no artificial flavour and no stale boxes sitting in a warehouse. Cooked fresh, sealed with care and delivered to your door."
-                : "No shortcuts and no old stock sitting in a warehouse. Clean bottles, sealed with care and delivered to your door."}
-            </p>
-            <Link to="/about" className="btn-gold mt-8">
-              Read our story <ArrowRight size={16} />
-            </Link>
-          </Reveal>
-        </div>
-      </section>
+      <AboutTeaser sweets={sweets} />
 
       {/* ============ SERVICES ============ */}
-      <section className="container-x py-20">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="eyebrow">Our services</span>
-          <h2 className="title-lg mt-3">
-            {sweets ? "More than a sweet shop" : "More than bottled water"}
-          </h2>
-          <p className="mt-3 text-neutral-600">
-            {sweets
-              ? "From a single gift box to a full wedding order, we handle it with the same care."
-              : "From a single bottle to a weekly office supply, we handle it with the same care."}
-          </p>
-        </Reveal>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {services.slice(0, 6).map((s, i) => (
-            <Reveal key={s.title} delay={i * 80}>
-              <Tilt className="group h-full rounded-3xl border border-champ-200 bg-white p-7 transition-shadow duration-500 hover:border-champ-400 hover:shadow-2xl hover:shadow-champ-200/50">
-                <span className="grid h-14 w-14 place-items-center rounded-2xl champ-bg text-royal shadow-lg shadow-champ-300/40 transition duration-500 group-hover:rotate-6 group-hover:scale-110">
-                  <Icon name={s.icon} />
-                </span>
-                <h3 className="mt-5 font-display text-2xl font-bold text-royal">
-                  {s.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-                  {s.text}
-                </p>
-              </Tilt>
-            </Reveal>
-          ))}
-        </div>
-        <Reveal className="mt-10 text-center">
-          <Link to="/services" className="btn-line">
-            Explore all services <ArrowRight size={16} />
-          </Link>
-        </Reveal>
-      </section>
+      <ServicesShowcase services={services} sweets={sweets} />
 
       {/* ============ WHY CHOOSE US ============ */}
-      <section className="grain relative overflow-hidden bg-royal py-24">
-        <div className="pointer-events-none absolute -left-20 top-10 h-80 w-80 animate-glow rounded-full bg-champ-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute -right-20 bottom-0 h-96 w-96 animate-glow rounded-full bg-gold-500/25 blur-3xl" />
-        <div className="container-x relative">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <span className="eyebrow !text-champ-300">Why choose us</span>
-            <h2 className="mt-3 font-display text-4xl font-bold leading-tight text-white sm:text-5xl">
-              Six reasons families <span className="gold-text">come back</span>
-            </h2>
-          </Reveal>
-          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {WHY.map((w, i) => (
-              <Reveal key={w.title} delay={i * 80}>
-                <div className="group h-full rounded-3xl border border-champ-300/20 bg-white/[0.04] p-7 backdrop-blur transition duration-500 hover:-translate-y-2 hover:border-champ-300/60 hover:bg-white/[0.08] hover:shadow-2xl hover:shadow-black/30">
-                  <span className="grid h-12 w-12 place-items-center rounded-full border border-champ-300/40 text-champ-300 transition duration-500 group-hover:rotate-12 group-hover:bg-champ-400 group-hover:text-royal">
-                    <Icon name={w.icon} size={22} />
-                  </span>
-                  <h3 className="mt-5 font-display text-2xl font-bold text-champ-100">
-                    {w.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-champ-100/70">
-                    {w.text}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-          <div className="mt-14 grid grid-cols-2 gap-6 border-t border-white/10 pt-10 md:grid-cols-4">
-            {STATS.map((s) => (
-              <div key={s.label} className="text-center">
-                <div className="gold-text font-display text-5xl font-bold">
-                  <CountUp to={s.value} suffix={s.suffix} />
-                </div>
-                <div className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-champ-100/60">
-                  {s.label}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-10 text-center">
-            <Link to="/why-us" className="btn-ghost-light">
-              See the full story <ArrowRight size={16} />
-            </Link>
-          </div>
-        </div>
-      </section>
+      <WhyChoose items={WHY} stats={STATS} sweets={sweets} />
 
       {/* ============ PROCESS ============ */}
       <section className="container-x py-20">
@@ -388,35 +257,39 @@ export default function Home() {
 
       {/* ============ TESTIMONIALS ============ */}
       {TESTIMONIALS.length > 0 && (
-          <section className="overflow-hidden bg-champ-100/40 py-20">
+        <section className="overflow-hidden bg-champ-100/40 py-20">
           <Reveal className="container-x text-center">
             <span className="eyebrow">Kind words</span>
             <h2 className="title-lg mt-3">What our customers say</h2>
           </Reveal>
           <div className="marquee-pause mt-12">
             <div className="marquee flex w-max gap-6 [animation-duration:60s]">
-              {[...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
-                <figure
-                  key={i}
-                  className="w-[340px] shrink-0 rounded-3xl border border-champ-200 bg-white p-7 transition duration-500 hover:-translate-y-1 hover:border-champ-400 hover:shadow-xl hover:shadow-champ-200/50"
-                >
-                  <Quote className="text-champ-400" size={26} />
-                  <blockquote className="mt-3 text-sm leading-relaxed text-neutral-600">
-                    {t.text}
-                  </blockquote>
-                  <figcaption className="mt-5 flex items-center gap-3">
-                    <span className="grid h-10 w-10 place-items-center rounded-full champ-bg font-bold text-royal">
-                      {t.name[0]}
-                    </span>
-                    <span>
-                      <span className="block text-sm font-bold text-royal">
-                        {t.name}
+              {[...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS].map(
+                (t, i) => (
+                  <figure
+                    key={i}
+                    className="w-[340px] shrink-0 rounded-3xl border border-champ-200 bg-white p-7 transition duration-500 hover:-translate-y-1 hover:border-champ-400 hover:shadow-xl hover:shadow-champ-200/50"
+                  >
+                    <Quote className="text-champ-400" size={26} />
+                    <blockquote className="mt-3 text-sm leading-relaxed text-neutral-600">
+                      {t.text}
+                    </blockquote>
+                    <figcaption className="mt-5 flex items-center gap-3">
+                      <span className="grid h-10 w-10 place-items-center rounded-full champ-bg font-bold text-royal">
+                        {t.name[0]}
                       </span>
-                      <span className="text-xs text-neutral-500">{t.place}</span>
-                    </span>
-                  </figcaption>
-                </figure>
-              ))}
+                      <span>
+                        <span className="block text-sm font-bold text-royal">
+                          {t.name}
+                        </span>
+                        <span className="text-xs text-neutral-500">
+                          {t.place}
+                        </span>
+                      </span>
+                    </figcaption>
+                  </figure>
+                ),
+              )}
             </div>
           </div>
         </section>
