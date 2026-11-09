@@ -8,6 +8,7 @@ const multer = require("multer");
 const { createClient } = require("@supabase/supabase-js");
 const { STATUSES, buildStats } = require("./stats");
 const bg = require("./bg");
+const { stripPieces } = require("./pieces");
 
 const app = express();
 app.set("trust proxy", true); // deploy (Vercel/Render/Nginx) ke peeche asli visitor IP milti rahe
@@ -454,7 +455,7 @@ const shape = (p, country, rate) => ({
         ? {
             key: v.key,
             label: v.label,
-            note: v.note,
+            note: stripPieces(p.name, v.note),
             image: v.image,
             images: v.images || [],
             price: vp.price,
@@ -475,7 +476,7 @@ const shape = (p, country, rate) => ({
       : p.image_url
         ? [p.image_url]
         : [],
-  unit: p.unit,
+  unit: stripPieces(p.name, p.unit),
   featured: p.featured,
   in_stock: p.in_stock,
   price: priceFor(p, country, rate),
@@ -1230,25 +1231,124 @@ const CONTACT_TO = {
 app.post(
   "/api/contact",
   ah(async (req, res) => {
-    const { name, email, message, country } = req.body || {};
+    const { name, email, message, country, phone, topic } = req.body || {};
     if (!name?.trim() || !emailRe.test(email || "") || !message?.trim())
       return res
         .status(400)
         .json({ error: "Fill in name, a valid email and your message." });
     const cc = normCountry(country);
-    // Pakistan ka contact message -> wjahattahir@gmail.com, USA ka -> shahidmahmood73@hotmail.com
-    const to = CONTACT_TO[cc];
-    await sendMail(
-      to,
-      `Contact message from ${name.trim()} (${cc === "PK" ? "Pakistan" : "USA"})`,
-      wrapMail(
-        "New contact message",
-        `<p><b>${esc(name)}</b> (${esc(email)})</p><p>${esc(message).replace(/\n/g, "<br>")}</p>`,
-        cc === "PK" ? "Evelyn One" : "Mithai House",
-      ),
-      cc,
-      { replyTo: email.trim() },
-    );
+    const clean = {
+      country: cc,
+      name: String(name).trim().slice(0, 120),
+      email: String(email).trim().slice(0, 200),
+      phone: String(phone || "")
+        .trim()
+        .slice(0, 40),
+      topic: String(topic || "")
+        .trim()
+        .slice(0, 80),
+      message: String(message).trim().slice(0, 3000),
+    };
+    // 1) Admin page ke liye database me save (table na bani ho to bhi email chali jaye gi)
+    let saved = true;
+    try {
+      const { error } = await db.from("contact_messages").insert(clean);
+      if (error) throw error;
+    } catch (e) {
+      saved = false;
+      console.error(
+        "contact_messages save failed (supabase/contact-messages.sql run kiya?):",
+        e?.message || e,
+      );
+    }
+    // 2) Region ke admin ko email: Pakistan -> wjahattahir@gmail.com, USA -> shahidmahmood73@hotmail.com
+    let mailed = true;
+    try {
+      const to = CONTACT_TO[cc];
+      await sendMail(
+        to,
+        `Contact message from ${clean.name} (${cc === "PK" ? "Pakistan" : "USA"})`,
+        wrapMail(
+          "New contact message",
+          `<p><b>${esc(clean.name)}</b> (${esc(clean.email)})</p>` +
+            (clean.phone ? `<p>Phone: ${esc(clean.phone)}</p>` : "") +
+            (clean.topic ? `<p>Topic: ${esc(clean.topic)}</p>` : "") +
+            `<p>${esc(clean.message).replace(/\n/g, "<br>")}</p>`,
+          cc === "PK" ? "Apna Pani" : "Mithai House",
+        ),
+        cc,
+        { replyTo: clean.email },
+      );
+    } catch (e) {
+      mailed = false;
+      console.error("contact email failed:", e?.message || e);
+    }
+    if (!saved && !mailed)
+      return res.status(500).json({
+        error: "Message send nahi ho saka. Please thori dair baad try karein.",
+      });
+    res.json({ ok: true });
+  }),
+);
+
+// Admin: apni region ke contact messages (Pakistan admin = PK, USA admin = US)
+app.get(
+  "/api/admin/contacts",
+  auth,
+  requireAdmin,
+  ah(async (req, res) => {
+    const sc = req.user.adminScope;
+    const { data, error } = await db
+      .from("contact_messages")
+      .select("*")
+      .eq("country", sc.country)
+      .order("created_at", { ascending: false })
+      .limit(1000);
+    if (error) {
+      if (/contact_messages|relation|schema cache/i.test(error.message || ""))
+        return res.json({
+          messages: [],
+          warning:
+            "contact_messages table nahi bani. Supabase SQL Editor me supabase/contact-messages.sql run karein.",
+        });
+      throw error;
+    }
+    res.json({ messages: data || [] });
+  }),
+);
+
+app.patch(
+  "/api/admin/contacts/:id",
+  auth,
+  requireAdmin,
+  ah(async (req, res) => {
+    const status = String(req.body?.status || "");
+    if (!["new", "read", "replied"].includes(status))
+      return res.status(400).json({ error: "Invalid status." });
+    const { data, error } = await db
+      .from("contact_messages")
+      .update({ status })
+      .eq("id", req.params.id)
+      .eq("country", req.user.adminScope.country)
+      .select()
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: "Message not found." });
+    res.json({ message: data });
+  }),
+);
+
+app.delete(
+  "/api/admin/contacts/:id",
+  auth,
+  requireAdmin,
+  ah(async (req, res) => {
+    const { error } = await db
+      .from("contact_messages")
+      .delete()
+      .eq("id", req.params.id)
+      .eq("country", req.user.adminScope.country);
+    if (error) throw error;
     res.json({ ok: true });
   }),
 );

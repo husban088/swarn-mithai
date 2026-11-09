@@ -7,6 +7,7 @@ import {
   Clock,
   Eye,
   FileText,
+  Mail,
   LayoutDashboard,
   Loader,
   Package,
@@ -27,6 +28,7 @@ import Thumb from "../components/Thumb";
 import { imagesOf } from "../lib/img";
 import AdminSales from "../components/AdminSales";
 import AdminSale from "../components/AdminSale";
+import AdminContacts from "../components/AdminContacts";
 import { downloadInvoice } from "../lib/invoice";
 import { orderMatches } from "../lib/orderSearch";
 import { api, json } from "../lib/api";
@@ -691,6 +693,7 @@ const TABS = [
   { key: "orders", label: "Orders", icon: ClipboardList },
   { key: "sales", label: "Sales", icon: BarChart3 },
   { key: "offers", label: "Sale offers", icon: BadgePercent },
+  { key: "contacts", label: "Contacts", icon: Mail },
 ];
 
 export default function Admin() {
@@ -759,6 +762,8 @@ export default function Admin() {
           <AdminSales />
         ) : tab === "offers" ? (
           <AdminSale />
+        ) : tab === "contacts" ? (
+          <AdminContacts />
         ) : (
           <OrdersTab />
         )}

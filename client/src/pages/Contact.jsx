@@ -106,21 +106,15 @@ export default function Contact() {
     }
     setBusy(true);
     try {
-      // Server sirf name / email / message leta hai: topic + phone message ke upar jod diye
-      const body = [
-        `Topic: ${topic}`,
-        f.phone.trim() ? `Phone: ${f.phone.trim()}` : "",
-        "",
-        f.message.trim(),
-      ]
-        .filter((l, i) => l || i === 2)
-        .join("\n");
+      // Name / email / phone / topic / message alag alag jate hain (Admin -> Contacts me dikhte hain)
       await api(
         "/contact",
         json("POST", {
           name: f.name.trim(),
           email: f.email.trim(),
-          message: body,
+          phone: f.phone.trim(),
+          topic,
+          message: f.message.trim(),
           country: country?.code,
         }),
       );

@@ -1,6 +1,7 @@
 // Orders + payments (Cash on Delivery, Stripe Checkout, PayPal).
 const orderMail = require("./orderEmail");
 const bg = require("./bg");
+const { stripPieces } = require("./pieces");
 // Koi extra npm package nahi chahiye: Stripe aur PayPal ko seedha REST API se call kiya gaya hai (Node 18+).
 const PAY_METHODS = ["cod", "stripe", "paypal", "bank"];
 const PAY_NAME = {
@@ -367,7 +368,7 @@ module.exports = function mountOrders(ctx) {
           category: p.category,
           ...(vp ? { variant: vp.v.key, variant_label: vp.v.label } : {}),
           name: vp ? `${p.name} - ${vp.v.label}` : p.name,
-          unit: vp ? vp.v.note || p.unit : p.unit,
+          unit: stripPieces(p.name, vp ? vp.v.note || p.unit : p.unit),
           qty,
           price,
           image: (vp && vp.v.image) || p.image_url || "",

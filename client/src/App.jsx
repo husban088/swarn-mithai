@@ -9,6 +9,7 @@ import {
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import CartDrawer from "./components/CartDrawer";
+import WhatsAppButton from "./components/WhatsAppButton";
 import { Mark } from "./components/Logo";
 import { useAuth, useGeo } from "./store";
 import { brandFor } from "./config";
@@ -97,7 +98,8 @@ function ScrollTop() {
   useLayoutEffect(() => {
     const pathChanged = pathRef.current !== loc.pathname;
     // Pehle saved position parho, phir key badlo (warna naye page ka scroll event usay overwrite kar de)
-    const target = navType === "POP" ? positions.current.get(loc.key) : undefined;
+    const target =
+      navType === "POP" ? positions.current.get(loc.key) : undefined;
     keyRef.current = loc.key;
     pathRef.current = loc.pathname;
 
@@ -274,6 +276,7 @@ export default function App() {
         </Suspense>
       </main>
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 }
