@@ -119,7 +119,7 @@ export default function Gallery({ p, variant = "page", overlay = null }) {
             key={cur.u}
             src={cur.u}
             alt={`${p.name} ${i + 1}`}
-            w={1600}
+            w={1200}
             eager
             zoom={false}
           />

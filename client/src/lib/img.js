@@ -46,3 +46,24 @@ export const tinyOf = (url) => {
   const m = /^\/hero\/([^/]+\.jpe?g)$/.exec(url);
   return m ? `/hero/blur/${m[1]}` : null;
 };
+
+// Card / gallery image ka exact URL (FitImage aur prefetch dono yahi use karte hain,
+// taake prefetch ki hui image browser cache se foran mile aur dobara download na ho).
+export const fitUrl = (src, w = 700) =>
+  cld(src, `f_auto,q_auto:good,w_${w},c_limit`);
+
+// Images ko pehle se (idle time me) download kar leta hai, taake page kholte hi sharp dikhein.
+const warmed = new Set();
+export function prefetchImages(urls) {
+  if (typeof window === "undefined") return;
+  const run = () =>
+    urls.forEach((u) => {
+      if (!u || warmed.has(u)) return;
+      warmed.add(u);
+      const im = new Image();
+      im.decoding = "async";
+      im.src = u;
+    });
+  if ("requestIdleCallback" in window) window.requestIdleCallback(run, { timeout: 1500 });
+  else setTimeout(run, 300);
+}

@@ -24,6 +24,7 @@ import {
 } from "./config";
 import { lineKey, pickVariant, variantsOf, viewOf } from "./lib/variants";
 import { onBootCode, takeBootResult } from "./lib/geoBoot";
+import { fitUrl, imagesOf, prefetchImages } from "./lib/img";
 
 /* ------------------------------------------------------------------ */
 /* Country detection (IP based, VPN friendly)                          */
@@ -404,6 +405,14 @@ function ShopProvider({ children }) {
         if (sig !== lastSig.current) {
           lastSig.current = sig;
           setProducts(mine);
+          // Page kholte hi sab cards ki images sharp dikhein: pehle se download kar lo
+          prefetchImages(
+            mine
+              .map((p) => imagesOf(p)[0])
+              .filter(Boolean)
+              .slice(0, 36)
+              .map((u) => fitUrl(u, 700)),
+          );
         }
         if (r.rate) setRate(r.rate);
         setError("");

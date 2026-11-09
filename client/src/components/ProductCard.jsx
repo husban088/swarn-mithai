@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Check, Play, Plus, ShoppingBag } from "lucide-react";
 import { CATEGORIES } from "../config";
-import { imagesOf, videoOf } from "../lib/img";
+import { fitUrl, imagesOf, prefetchImages, videoOf } from "../lib/img";
 import { pickVariant, viewOf } from "../lib/variants";
 import { useShop } from "../store";
 import Thumb from "./Thumb";
@@ -37,6 +37,8 @@ export default function ProductCard({ p: base }) {
             to={`/product/${p.id}`}
             aria-label={`View ${p.name}`}
             className="absolute inset-0 block"
+            onMouseEnter={() => prefetchImages(imagesOf(p).slice(0, 2).map((u) => fitUrl(u, 1200)))}
+            onTouchStart={() => prefetchImages(imagesOf(p).slice(0, 2).map((u) => fitUrl(u, 1200)))}
           >
             <Thumb key={imagesOf(p)[0] || "none"} p={p} />
             {!p.in_stock && (

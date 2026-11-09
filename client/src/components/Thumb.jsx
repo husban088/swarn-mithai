@@ -5,7 +5,7 @@ import { Mark } from "./Logo";
 
 // Product ki image (poori dikhti hai, stretch nahi hoti). Image na ho ya load na ho
 // to luxury placeholder dikhata hai.
-export default function Thumb({ p, className = "", w = 900, zoom = true }) {
+export default function Thumb({ p, className = "", w = 700, zoom = true }) {
   const [bad, setBad] = useState(false);
   const aqua = p.category === "aqua";
   // Options wale product ki base image na ho to pehle option ki image

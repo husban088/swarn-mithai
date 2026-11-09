@@ -292,6 +292,7 @@ function SweetArt() {
 
 function SlideImg({ cands, alt, art = null, ken = false, first = false }) {
   const [n, setN] = useState(0);
+  const [ok, setOk] = useState(false);
   const src = cands[n];
   if (!src) return art;
   const url = cld(src, "f_auto,q_auto,w_1200");
@@ -306,16 +307,23 @@ function SlideImg({ cands, alt, art = null, ken = false, first = false }) {
         aria-hidden="true"
         decoding="async"
         draggable={false}
-        className={`absolute inset-0 h-full w-full scale-110 object-cover opacity-70 ${tiny ? "" : "blur-xl"}`}
+        className={`absolute inset-0 h-full w-full scale-110 object-cover transition-opacity duration-500 ${ok ? "opacity-70" : "opacity-0"} ${tiny ? "" : "blur-xl"}`}
       />
       <img
+        ref={(el) => {
+          if (el && el.complete && el.naturalWidth > 0 && !ok) setOk(true);
+        }}
         src={url}
         alt={alt}
         decoding="async"
         fetchpriority={first ? "high" : "auto"}
         draggable={false}
-        onError={() => setN((v) => v + 1)}
-        className={`relative h-full w-full object-contain ${ken ? "hx-ken" : ""}`}
+        onLoad={() => setOk(true)}
+        onError={() => {
+          setOk(false);
+          setN((v) => v + 1);
+        }}
+        className={`relative h-full w-full object-contain transition-opacity duration-500 ${ok ? "opacity-100" : "opacity-0"} ${ken ? "hx-ken" : ""}`}
       />
     </>
   );

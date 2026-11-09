@@ -48,7 +48,7 @@ export default function HeroShowcase({ products, fallback }) {
             <FitImage
               src={imagesOf(p)[0]}
               alt={p.name}
-              w={1400}
+              w={1000}
               eager={k === 0}
               zoom={false}
             />

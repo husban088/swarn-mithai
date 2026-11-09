@@ -42,6 +42,7 @@ const CSS = `
 
 function CatImage({ cands, emoji, dark, onRatio }) {
   const [n, setN] = useState(0);
+  const [ok, setOk] = useState(false);
   const src = cands[n];
   if (!src)
     return (
@@ -55,7 +56,7 @@ function CatImage({ cands, emoji, dark, onRatio }) {
   const tiny = tinyOf(src);
   return (
     <>
-      {/* loading ke waqt dhundhla background (image aate hi frame uski size ka ho jata hai) */}
+      {/* dhundhla backdrop sirf image load hone ke baad (loading ke waqt blur nahi dikhta) */}
       <img
         src={tiny || url}
         alt=""
@@ -63,9 +64,15 @@ function CatImage({ cands, emoji, dark, onRatio }) {
         loading="lazy"
         decoding="async"
         draggable={false}
-        className={`absolute inset-0 h-full w-full object-cover opacity-70 ${tiny ? "" : "blur-xl"}`}
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${ok ? "opacity-70" : "opacity-0"} ${tiny ? "" : "blur-xl"}`}
       />
       <img
+        ref={(el) => {
+          if (el && el.complete && el.naturalWidth > 0 && !ok) {
+            setOk(true);
+            onRatio(el.naturalWidth / el.naturalHeight);
+          }
+        }}
         src={url}
         alt=""
         loading="lazy"
@@ -74,9 +81,13 @@ function CatImage({ cands, emoji, dark, onRatio }) {
         onLoad={(e) => {
           const { naturalWidth: w, naturalHeight: h } = e.currentTarget;
           if (w && h) onRatio(w / h);
+          setOk(true);
         }}
-        onError={() => setN((v) => v + 1)}
-        className="relative block h-full w-full object-contain"
+        onError={() => {
+          setOk(false);
+          setN((v) => v + 1);
+        }}
+        className={`relative block h-full w-full object-contain transition-opacity duration-500 ${ok ? "opacity-100" : "opacity-0"}`}
       />
     </>
   );
