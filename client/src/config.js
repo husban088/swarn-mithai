@@ -26,7 +26,8 @@ export const BRANDS = {
     name: "Mithai House",
     letter: "M",
     drop: false,
-    logo: "/brand/mithai-house.png",
+    logo: "/brand/mithai-house.png", // safed background par (kala logo, transparent)
+    logoLight: "/brand/mithai-house-light.png", // dark / blue background par (safed logo, transparent)
     tagline: "Handcrafted Mithai",
     email: "shahidmahmood73@hotmail.com",
     owner: "Shahid Mubasher",

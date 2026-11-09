@@ -19,7 +19,8 @@ const REGIONS = {
     flag: "🇺🇸",
     label: "USA",
     brand: "Mithai House",
-    logo: "/brand/mithai-house.png",
+    logo: "/brand/mithai-house-light.png", // header dark blue hai, isliye safed logo
+    wide: true,
   },
 };
 
@@ -142,7 +143,7 @@ function LoginModal({ region, onClose, onDone }) {
           </button>
           <div className="relative flex items-center gap-4">
             <span
-              className={`grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl ${R.bare ? "" : "bg-white p-1.5 shadow-lg"}`}
+              className={`grid h-16 shrink-0 place-items-center overflow-hidden ${R.wide ? "w-28 sm:w-32" : "w-16 rounded-2xl"}`}
             >
               <img
                 src={R.logo}

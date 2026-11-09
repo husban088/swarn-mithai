@@ -76,9 +76,9 @@ export function Mark({ size = 44, letter = "M", drop = false }) {
 }
 
 // Country ke hisaab se asli brand logo (Pakistan = Evelyn One, USA = Mithai House).
-// Evelyn One: transparent SVG emblem (koi white plate nahi), har background par chalta hai.
-// Mithai House: PNG logo, dark par safed card ke sath (plate = true).
-export function BrandMark({ size = 44, plate = true }) {
+// Dono transparent hain (koi white plate/box nahi). BrandMark blue/dark cards par use hota hai,
+// isliye Mithai House ka safed (light) logo lagta hai. Safed background par light={false} do.
+export function BrandMark({ size = 44, light = true }) {
   const { country } = useGeo();
   const b = brandFor(country?.code);
   if (b.mark) {
@@ -93,20 +93,14 @@ export function BrandMark({ size = 44, plate = true }) {
       />
     );
   }
-  const img = (
+  return (
     <img
-      src={b.logo}
+      src={light && b.logoLight ? b.logoLight : b.logo}
       alt={b.name}
-      style={{ height: size }}
-      className="w-auto max-w-none select-none object-contain"
+      style={{ height: size, maxWidth: "100%" }}
+      className="w-auto select-none object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]"
       draggable="false"
     />
-  );
-  if (!plate) return img;
-  return (
-    <span className="inline-flex items-center rounded-2xl bg-white p-2 shadow-lg shadow-black/20">
-      {img}
-    </span>
   );
 }
 
@@ -119,9 +113,8 @@ export default function Logo({ light = false, compact }) {
 
   let src = b.logo;
   let cls = "h-16 sm:h-[4.5rem]"; // Mithai House
-  let plate = light; // Mithai ka PNG dark par safed card me
+  if (light && b.logoLight) src = b.logoLight; // Mithai House: dark background par safed logo
   if (evelyn) {
-    plate = false; // Evelyn One hamesha transparent
     if (small) {
       src = light ? b.logoCompactLight : b.logoCompact;
       cls = "h-10 sm:h-12 lg:h-[3.4rem]";
@@ -136,13 +129,7 @@ export default function Logo({ light = false, compact }) {
       aria-label={`${b.name} home`}
       className="group flex items-center"
     >
-      <span
-        className={
-          plate
-            ? "rounded-2xl bg-white px-3 py-1.5 shadow-lg shadow-black/25"
-            : ""
-        }
-      >
+      <span>
         <img
           src={src}
           alt={b.name}

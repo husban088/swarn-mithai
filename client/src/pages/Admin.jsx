@@ -718,7 +718,7 @@ export default function Admin() {
               draggable="false"
             />
           ) : (
-            <span className="grid shrink-0 place-items-center rounded-3xl border border-gold-200 bg-white p-3 shadow-lg shadow-slate-900/10 transition duration-500 hover:-translate-y-1 hover:shadow-xl">
+            <span className="grid shrink-0 place-items-center transition duration-500 hover:-translate-y-1">
               <img
                 src={sc.logo}
                 alt={sc.brand}

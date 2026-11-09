@@ -35,14 +35,12 @@ const META = {
 const CSS = `
 .cc-card{transition:transform .6s cubic-bezier(.2,.7,.2,1),box-shadow .6s ease,border-color .6s ease}
 .cc-card:hover{transform:translateY(-8px)}
-.cc-img{transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
-.cc-card:hover .cc-img{transform:scale(1.05)}
 @keyframes ccSheen{from{transform:translateX(-140%) skewX(-18deg)}to{transform:translateX(480%) skewX(-18deg)}}
 .cc-card:hover .cc-sheen{animation:ccSheen 1.2s ease}
-@media (prefers-reduced-motion:reduce){.cc-card:hover{transform:none}.cc-card:hover .cc-sheen,.cc-card:hover .cc-img{animation:none;transform:none}}
+@media (prefers-reduced-motion:reduce){.cc-card:hover{transform:none}.cc-card:hover .cc-sheen{animation:none}}
 `;
 
-function CatImage({ cands, emoji, dark }) {
+function CatImage({ cands, emoji, dark, onRatio }) {
   const [n, setN] = useState(0);
   const src = cands[n];
   if (!src)
@@ -53,10 +51,11 @@ function CatImage({ cands, emoji, dark }) {
         {emoji}
       </span>
     );
-  const url = cld(src, "f_auto,q_auto,w_900");
+  const url = cld(src, "f_auto,q_auto,w_1200");
   const tiny = tinyOf(src);
   return (
     <>
+      {/* loading ke waqt dhundhla background (image aate hi frame uski size ka ho jata hai) */}
       <img
         src={tiny || url}
         alt=""
@@ -64,7 +63,7 @@ function CatImage({ cands, emoji, dark }) {
         loading="lazy"
         decoding="async"
         draggable={false}
-        className={`absolute inset-0 h-full w-full scale-110 object-cover opacity-70 ${tiny ? "" : "blur-xl"}`}
+        className={`absolute inset-0 h-full w-full object-cover opacity-70 ${tiny ? "" : "blur-xl"}`}
       />
       <img
         src={url}
@@ -72,10 +71,29 @@ function CatImage({ cands, emoji, dark }) {
         loading="lazy"
         decoding="async"
         draggable={false}
+        onLoad={(e) => {
+          const { naturalWidth: w, naturalHeight: h } = e.currentTarget;
+          if (w && h) onRatio(w / h);
+        }}
         onError={() => setN((v) => v + 1)}
-        className="cc-img relative h-full w-full object-contain"
+        className="relative block h-full w-full object-contain"
       />
     </>
+  );
+}
+
+// Image ka frame: image ki asli width/height ratio le leta hai, is liye poori image dikhti hai,
+// na crop, na stretch, na kisi side white space.
+function CatFrame({ cands, emoji, dark }) {
+  const [ratio, setRatio] = useState(0);
+  return (
+    <div
+      style={{ aspectRatio: ratio || "4 / 3" }}
+      className={`relative w-full self-start overflow-hidden rounded-xl ring-1 ${dark ? "bg-white/5 ring-white/15" : "bg-neutral-50 ring-royal/10"}`}
+    >
+      <CatImage cands={cands} emoji={emoji} dark={dark} onRatio={setRatio} />
+      <span className="cc-sheen pointer-events-none absolute inset-y-0 left-0 w-1/5 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+    </div>
   );
 }
 
@@ -117,27 +135,28 @@ export default function CategoryCards({ sweets, aqua }) {
               <Reveal key={c} delay={k * 120} className="h-full">
                 <Link
                   to={`/shop?cat=${c}`}
-                  className={`cc-card group relative grid h-full overflow-hidden rounded-[2rem] border p-3 sm:p-4 ${single ? "md:grid-cols-2 md:items-center" : ""} ${dark ? "border-royal bg-royal text-white shadow-[0_40px_80px_-35px_rgba(11,11,13,.7)] hover:shadow-[0_50px_90px_-30px_rgba(29,127,224,.55)]" : "border-royal/15 bg-white text-royal shadow-[0_40px_80px_-40px_rgba(11,11,13,.4)] hover:border-gold-500 hover:shadow-[0_50px_90px_-35px_rgba(29,127,224,.45)]"}`}
+                  className={`cc-card group relative grid h-full content-start overflow-hidden rounded-[2rem] border p-3 sm:p-4 ${single ? "md:grid-cols-2 md:items-center" : ""} ${dark ? "border-royal bg-royal text-white shadow-[0_40px_80px_-35px_rgba(11,11,13,.7)] hover:shadow-[0_50px_90px_-30px_rgba(29,127,224,.55)]" : "border-royal/15 bg-white text-royal shadow-[0_40px_80px_-40px_rgba(11,11,13,.4)] hover:border-gold-500 hover:shadow-[0_50px_90px_-35px_rgba(29,127,224,.45)]"}`}
                 >
-                  {/* image frame: poori image, crop nahi */}
-                  <div
-                    className={`relative aspect-[3/2] w-full overflow-hidden rounded-[1.5rem] ring-1 ${dark ? "bg-white/5 ring-white/15" : "bg-neutral-50 ring-royal/10"}`}
-                  >
-                    <CatImage cands={cands} emoji={cat.icon} dark={dark} />
-                    <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-royal shadow backdrop-blur sm:left-4 sm:top-4">
-                      {m.kicker}
-                    </span>
-                    {list.length > 0 && (
-                      <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-royal/85 px-3 py-1 text-[11px] font-bold text-white backdrop-blur sm:bottom-4 sm:right-4">
-                        {list.length}{" "}
-                        {list.length === 1 ? "product" : "products"}
-                      </span>
-                    )}
-                    <span className="cc-sheen pointer-events-none absolute inset-y-0 left-0 w-1/5 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-                  </div>
+                  {/* image frame: poori image, crop nahi, koi badge image ke upar nahi */}
+                  <CatFrame cands={cands} emoji={cat.icon} dark={dark} />
 
                   {/* text */}
                   <div className="relative flex min-w-0 flex-col p-4 sm:p-6">
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                      <span
+                        className={`rounded-full px-3 py-1 text-[11px] font-bold ${dark ? "bg-white text-royal" : "bg-royal text-white"}`}
+                      >
+                        {m.kicker}
+                      </span>
+                      {list.length > 0 && (
+                        <span
+                          className={`rounded-full border px-3 py-1 text-[11px] font-bold ${dark ? "border-white/30 text-white/90" : "border-royal/20 text-royal"}`}
+                        >
+                          {list.length}{" "}
+                          {list.length === 1 ? "product" : "products"}
+                        </span>
+                      )}
+                    </div>
                     <h3
                       className={`font-display text-4xl font-bold leading-none sm:text-5xl ${dark ? "text-white" : "text-royal"}`}
                     >
