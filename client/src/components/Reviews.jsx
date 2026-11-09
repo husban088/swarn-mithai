@@ -209,17 +209,30 @@ export default function Reviews({ productId, onSummary }) {
 
   const active = hover || rating;
 
-  return (
-    <section id="reviews" className="mt-16 scroll-mt-28 sm:mt-20">
-      <div className="text-center">
-        <span className="eyebrow">Customer reviews</span>
-        <h2 className="mt-3 font-display text-4xl font-bold text-royal sm:text-5xl">
-          What people say
-        </h2>
-      </div>
+  // Jab tak koi review nahi: poora section (heading, rating box, list) hidden rehta hai.
+  // Pehla review post hote hi list update hoti hai aur poora section foran dikh jata hai.
+  const empty = list.length === 0;
+  if (loading) return null;
 
-      <div className="mx-auto mt-8 w-full max-w-4xl space-y-6">
+  return (
+    <section
+      id="reviews"
+      className={`scroll-mt-28 ${empty ? "mt-10" : "mt-16 sm:mt-20"}`}
+    >
+      {!empty && (
+        <div className="text-center">
+          <span className="eyebrow">Customer reviews</span>
+          <h2 className="mt-3 font-display text-4xl font-bold text-royal sm:text-5xl">
+            What people say
+          </h2>
+        </div>
+      )}
+
+      <div
+        className={`mx-auto w-full max-w-4xl space-y-6 ${empty ? "" : "mt-8"}`}
+      >
         {/* Summary */}
+        {!empty && (
         <div className="relative overflow-hidden rounded-3xl bg-royal p-5 text-white shadow-xl shadow-royal/20 sm:p-8">
           <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 animate-glow rounded-full bg-gold-500/30 blur-3xl" />
           <div className="relative grid items-center gap-6 sm:grid-cols-[auto_1fr] sm:gap-10">
@@ -260,6 +273,7 @@ export default function Reviews({ productId, onSummary }) {
             </div>
           </div>
         </div>
+        )}
 
         {/* Toggle button: band ho to "Write review", khula ho to "Cancel review" */}
         <div className="flex justify-center">
@@ -439,28 +453,6 @@ export default function Reviews({ productId, onSummary }) {
 
         {/* Reviews list */}
         <div className="space-y-4 pt-2">
-          {loading &&
-            Array.from({ length: 3 }).map((_, k) => (
-              <div
-                key={k}
-                className="h-32 animate-pulse rounded-3xl bg-gold-50"
-              />
-            ))}
-
-          {!loading && list.length === 0 && (
-            <div className="grid place-items-center rounded-3xl border border-dashed border-gold-200 bg-gold-50/50 px-6 py-14 text-center">
-              <span className="grid h-16 w-16 animate-floaty place-items-center rounded-full bg-gradient-to-br from-[#060607] to-gold-600 text-white">
-                <MessageSquare size={26} />
-              </span>
-              <p className="mt-4 font-display text-2xl font-bold text-royal">
-                Be the first to review
-              </p>
-              <p className="mt-1 text-sm text-neutral-500">
-                Apna tajurba share karein, photo ke saath bhi.
-              </p>
-            </div>
-          )}
-
           {list.slice(0, shown).map((r, k) => (
             <article
               key={r.id}

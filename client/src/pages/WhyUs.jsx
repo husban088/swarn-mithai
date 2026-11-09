@@ -108,33 +108,37 @@ export default function WhyUs() {
       </section>
 
       <section className="container-x py-20">
-        <Reveal className="text-center">
-          <span className="eyebrow">Kind words</span>
-          <h2 className="title-lg mt-3">Loved by our customers</h2>
-        </Reveal>
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
-          {TESTIMONIALS.map((t, i) => (
-            <Reveal key={t.name} delay={(i % 2) * 100}>
-              <figure className="card-lux h-full p-8">
-                <Quote className="text-champ-400" size={28} />
-                <blockquote className="mt-3 leading-relaxed text-neutral-600">
-                  {t.text}
-                </blockquote>
-                <figcaption className="mt-5 flex items-center gap-3">
-                  <span className="grid h-11 w-11 place-items-center rounded-full champ-bg font-bold text-royal">
-                    {t.name[0]}
-                  </span>
-                  <span>
-                    <span className="block text-sm font-bold text-royal">
-                      {t.name}
+        {TESTIMONIALS.length > 0 && (
+          <>
+          <Reveal className="text-center">
+            <span className="eyebrow">Kind words</span>
+            <h2 className="title-lg mt-3">Loved by our customers</h2>
+          </Reveal>
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            {TESTIMONIALS.map((t, i) => (
+              <Reveal key={t.name} delay={(i % 2) * 100}>
+                <figure className="card-lux h-full p-8">
+                  <Quote className="text-champ-400" size={28} />
+                  <blockquote className="mt-3 leading-relaxed text-neutral-600">
+                    {t.text}
+                  </blockquote>
+                  <figcaption className="mt-5 flex items-center gap-3">
+                    <span className="grid h-11 w-11 place-items-center rounded-full champ-bg font-bold text-royal">
+                      {t.name[0]}
                     </span>
-                    <span className="text-xs text-neutral-500">{t.place}</span>
-                  </span>
-                </figcaption>
-              </figure>
-            </Reveal>
-          ))}
-        </div>
+                    <span>
+                      <span className="block text-sm font-bold text-royal">
+                        {t.name}
+                      </span>
+                      <span className="text-xs text-neutral-500">{t.place}</span>
+                    </span>
+                  </figcaption>
+                </figure>
+              </Reveal>
+            ))}
+          </div>
+          </>
+        )}
         <Reveal className="mt-12 text-center">
           <Link to="/shop" className="btn-gold !px-8 !py-3.5">
             Start your order <ArrowRight size={16} />

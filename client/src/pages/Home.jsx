@@ -387,38 +387,40 @@ export default function Home() {
       {sweets && <Faq />}
 
       {/* ============ TESTIMONIALS ============ */}
-      <section className="overflow-hidden bg-champ-100/40 py-20">
-        <Reveal className="container-x text-center">
-          <span className="eyebrow">Kind words</span>
-          <h2 className="title-lg mt-3">What our customers say</h2>
-        </Reveal>
-        <div className="marquee-pause mt-12">
-          <div className="marquee flex w-max gap-6 [animation-duration:60s]">
-            {[...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
-              <figure
-                key={i}
-                className="w-[340px] shrink-0 rounded-3xl border border-champ-200 bg-white p-7 transition duration-500 hover:-translate-y-1 hover:border-champ-400 hover:shadow-xl hover:shadow-champ-200/50"
-              >
-                <Quote className="text-champ-400" size={26} />
-                <blockquote className="mt-3 text-sm leading-relaxed text-neutral-600">
-                  {t.text}
-                </blockquote>
-                <figcaption className="mt-5 flex items-center gap-3">
-                  <span className="grid h-10 w-10 place-items-center rounded-full champ-bg font-bold text-royal">
-                    {t.name[0]}
-                  </span>
-                  <span>
-                    <span className="block text-sm font-bold text-royal">
-                      {t.name}
+      {TESTIMONIALS.length > 0 && (
+          <section className="overflow-hidden bg-champ-100/40 py-20">
+          <Reveal className="container-x text-center">
+            <span className="eyebrow">Kind words</span>
+            <h2 className="title-lg mt-3">What our customers say</h2>
+          </Reveal>
+          <div className="marquee-pause mt-12">
+            <div className="marquee flex w-max gap-6 [animation-duration:60s]">
+              {[...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
+                <figure
+                  key={i}
+                  className="w-[340px] shrink-0 rounded-3xl border border-champ-200 bg-white p-7 transition duration-500 hover:-translate-y-1 hover:border-champ-400 hover:shadow-xl hover:shadow-champ-200/50"
+                >
+                  <Quote className="text-champ-400" size={26} />
+                  <blockquote className="mt-3 text-sm leading-relaxed text-neutral-600">
+                    {t.text}
+                  </blockquote>
+                  <figcaption className="mt-5 flex items-center gap-3">
+                    <span className="grid h-10 w-10 place-items-center rounded-full champ-bg font-bold text-royal">
+                      {t.name[0]}
                     </span>
-                    <span className="text-xs text-neutral-500">{t.place}</span>
-                  </span>
-                </figcaption>
-              </figure>
-            ))}
+                    <span>
+                      <span className="block text-sm font-bold text-royal">
+                        {t.name}
+                      </span>
+                      <span className="text-xs text-neutral-500">{t.place}</span>
+                    </span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ============ CTA ============ */}
       <section className="container-x py-20">

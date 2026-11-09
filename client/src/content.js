@@ -98,28 +98,8 @@ export const STEPS = [
   },
 ];
 
-export const TESTIMONIALS = [
-  {
-    name: "Ayesha K.",
-    place: "Faisalabad",
-    text: "The kaju katli was unbelievably fresh. The box looked so premium that we gifted it to the whole family.",
-  },
-  {
-    name: "Usman R.",
-    place: "Lahore",
-    text: "Ordered for a wedding function and everything arrived on time and perfectly packed. Highly recommended.",
-  },
-  {
-    name: "Sana M.",
-    place: "Islamabad",
-    text: "No account, no hassle. I ordered in two minutes and paid on delivery. The rasmalai was perfect.",
-  },
-  {
-    name: "Daniel P.",
-    place: "Texas",
-    text: "Finally real Pakistani mithai that tastes like home. The gulab jamun reminded me of my grandmother's kitchen.",
-  },
-];
+// Sample reviews hata diye gaye. Jab real review ho tab yahan add karein, tab tak section nahi dikhta.
+export const TESTIMONIALS = [];
 
 /* ------------------------------------------------------------------ */
 /* Pakistan (Aqua water only): jin visitors ko Mithai nahi dikhti        */
@@ -215,23 +195,8 @@ export const AQUA_STEPS = [
   },
 ];
 
-export const AQUA_TESTIMONIALS = [
-  {
-    name: "Ayesha K.",
-    place: "Faisalabad",
-    text: "The 19 L bottles arrive on time every week and the water tastes clean. Very reliable service.",
-  },
-  {
-    name: "Usman R.",
-    place: "Lahore",
-    text: "We order for our whole office. Fresh bottles, fair price and pay on delivery. Highly recommended.",
-  },
-  {
-    name: "Sana M.",
-    place: "Islamabad",
-    text: "No account, no hassle. I ordered in two minutes and the delivery was quick.",
-  },
-];
+// Sample reviews hata diye gaye. Jab real review ho tab yahan add karein, tab tak section nahi dikhta.
+export const AQUA_TESTIMONIALS = [];
 
 /* ------------------------------------------------------------------ */
 /* FAQ (Home page par numbered accordion)                              */
