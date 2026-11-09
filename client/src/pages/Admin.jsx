@@ -707,14 +707,14 @@ export default function Admin() {
       </div>
     );
   return (
-    <div className="container-x py-12">
+    <div className="container-x overflow-x-clip py-8 sm:py-12">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex items-center gap-5">
+        <div className="flex min-w-0 max-w-full items-center gap-3 sm:gap-5">
           {sc.mark ? (
             <img
               src={sc.mark}
               alt={sc.brand}
-              className="h-14 w-14 shrink-0 object-contain transition duration-500 hover:-translate-y-1 sm:h-20 sm:w-20"
+              className="h-12 w-12 shrink-0 object-contain transition duration-500 hover:-translate-y-1 min-[400px]:h-14 min-[400px]:w-14 sm:h-20 sm:w-20"
               draggable="false"
             />
           ) : (
@@ -722,28 +722,28 @@ export default function Admin() {
               <img
                 src={sc.logo}
                 alt={sc.brand}
-                className="h-16 w-auto object-contain sm:h-20"
+                className="h-10 w-auto max-w-[96px] object-contain min-[400px]:h-14 sm:h-20 sm:max-w-none"
                 draggable="false"
               />
             </span>
           )}
-          <div>
-            <h1 className="font-display text-4xl font-bold text-royal sm:text-5xl">
+          <div className="min-w-0">
+            <h1 className="break-words font-display text-3xl font-bold leading-tight text-royal min-[400px]:text-4xl sm:text-5xl">
               {sc.brand} admin
             </h1>
-            <p className="mt-1 text-sm text-neutral-500">
+            <p className="mt-1 break-words text-xs text-neutral-500 sm:text-sm">
               Signed in as {sc.email} · {sc.market} ({sc.cur})
             </p>
           </div>
         </div>
         <AdminRegionSwitch />
       </div>
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mt-5 flex flex-wrap gap-2 sm:mt-6">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-semibold transition ${tab === key ? "gold-bg border-transparent text-white shadow-md" : "border-gold-200 text-neutral-600 hover:bg-gold-50"}`}
+            className={`flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-2 text-[13px] font-semibold transition sm:gap-2 sm:px-5 sm:py-2.5 sm:text-sm ${tab === key ? "gold-bg border-transparent text-white shadow-md" : "border-gold-200 text-neutral-600 hover:bg-gold-50"}`}
           >
             <Icon size={16} />
             {label}

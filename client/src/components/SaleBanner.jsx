@@ -92,6 +92,17 @@ const CSS = `
 .sb-sheen{animation:sbSheen 3.6s ease-in-out infinite}
 @keyframes sbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .sb-float{animation:sbFloat 5s ease-in-out infinite}
+.sb-cq{container-type:inline-size}
+.sb-main{display:grid;gap:1.75rem;padding:1.25rem;align-items:center}
+@container (min-width:480px){.sb-main{padding:2rem}}
+@container (min-width:720px){.sb-main{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:2.5rem;padding:2.5rem}}
+@container (min-width:960px){.sb-main{gap:3rem;padding:3.5rem}}
+.sb-h{font-size:clamp(2.25rem,7cqi,4.5rem);line-height:1.02}
+.sb-where{font-size:clamp(1.25rem,4.2cqi,2.25rem)}
+.sb-pct{font-size:26cqi;line-height:1}
+.sb-pcts{font-size:17cqi}
+.sb-flat{font-size:clamp(9px,3.4cqi,12px)}
+.sb-off{font-size:clamp(10px,4.4cqi,14px)}
 @media (prefers-reduced-motion:reduce){.sb-marq,.sb-spin,.sb-pop,.sb-rise,.sb-pulse,.sb-sheen,.sb-float{animation:none}}
 `;
 
@@ -115,6 +126,7 @@ export default function SaleBanner({
       }
     : live;
   if (!s.active) return null;
+  const embedded = !!preview; // admin preview: container ke andar, page-section nahi
 
   const pct = s.max;
   const head = s.same ? `${pct}% OFF` : `UP TO ${pct}% OFF`;
@@ -167,151 +179,169 @@ export default function SaleBanner({
     );
   }
 
-  return (
-    <section className={`container-x py-14 ${className}`}>
-      <style>{CSS}</style>
-      <Reveal>
-        <div className="grain group relative overflow-hidden rounded-[2.5rem] bg-royal text-white shadow-2xl shadow-black/25">
-          <div className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 animate-glow rounded-full bg-[#1d7fe0]/35 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-32 right-0 h-96 w-96 animate-glow rounded-full bg-[#0a3a78]/50 blur-3xl" />
-          <span className="sb-sheen pointer-events-none absolute inset-y-0 left-0 w-1/5 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+  const card = (
+    <div className="sb-cq">
+      <div className="grain group relative overflow-hidden rounded-[1.75rem] bg-royal text-white shadow-2xl shadow-black/25 sm:rounded-[2.5rem]">
+        <div className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 animate-glow rounded-full bg-[#1d7fe0]/35 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 right-0 h-96 w-96 animate-glow rounded-full bg-[#0a3a78]/50 blur-3xl" />
+        <span className="sb-sheen pointer-events-none absolute inset-y-0 left-0 w-1/5 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
-          <div className="relative grid items-center gap-10 p-6 sm:p-10 lg:grid-cols-[1.2fr_1fr] lg:p-14">
-            <div>
-              <span className="sb-rise inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-[#7fbaf7] backdrop-blur">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#4aa3f0]" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#4aa3f0]" />
-                </span>
-                Limited time sale
+        <div className="sb-main relative">
+          <div className="min-w-0">
+            <span className="sb-rise inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7fbaf7] backdrop-blur sm:px-4 sm:text-[11px] sm:tracking-[0.22em]">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#4aa3f0]" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#4aa3f0]" />
               </span>
-              <h2
-                key={pct}
-                className="sb-rise mt-5 font-display text-5xl font-bold leading-[1.02] sm:text-6xl lg:text-7xl"
-                style={{ animationDelay: "120ms" }}
-              >
-                <span className="gold-text">{head}</span>
-                <span className="mt-1 block text-3xl text-white/90 sm:text-4xl">
-                  {where}
+              Limited time sale
+            </span>
+            <h2
+              key={pct}
+              className="sb-rise mt-4 font-display font-bold sm:mt-5"
+              style={{ animationDelay: "120ms" }}
+            >
+              <span className="sb-h gold-text block break-words">{head}</span>
+              <span className="sb-where mt-1 block text-white/90">{where}</span>
+            </h2>
+            <p
+              className="sb-rise mt-4 max-w-xl text-sm leading-relaxed text-white/75 sm:mt-5 sm:text-base"
+              style={{ animationDelay: "240ms" }}
+            >
+              Sale abhi live hai. Product par original price cut hoti hai aur
+              naya price dikhta hai, cart aur checkout me discount khud lag jata
+              hai.
+            </p>
+            <div
+              className="sb-rise mt-6 flex flex-wrap gap-3 sm:mt-8"
+              style={{ animationDelay: "360ms" }}
+            >
+              {embedded ? (
+                <span className="btn-champ !px-7 !py-3 sm:!px-8 sm:!py-3.5">
+                  Shop the sale <ArrowRight size={16} />
                 </span>
-              </h2>
-              <p
-                className="sb-rise mt-5 max-w-xl text-base leading-relaxed text-white/75"
-                style={{ animationDelay: "240ms" }}
-              >
-                Sale abhi live hai. Product par original price cut hoti hai aur
-                naya price dikhta hai, cart aur checkout me discount khud lag
-                jata hai.
-              </p>
-              <div
-                className="sb-rise mt-8 flex flex-wrap gap-3"
-                style={{ animationDelay: "360ms" }}
-              >
-                <Link to="/shop" className="btn-champ !px-8 !py-3.5">
+              ) : (
+                <Link
+                  to="/shop"
+                  className="btn-champ !px-7 !py-3 sm:!px-8 sm:!py-3.5"
+                >
                   Shop the sale <ArrowRight size={16} />
                 </Link>
-              </div>
-              <div
-                className="sb-rise mt-8 grid gap-3 sm:grid-cols-3"
-                style={{ animationDelay: "480ms" }}
-              >
-                {[
-                  { i: Zap, t: "Instant", d: "Live on the website" },
-                  {
-                    i: BadgePercent,
-                    t: "Auto applied",
-                    d: "At cart & checkout",
-                  },
-                  {
-                    i: ShieldCheck,
-                    t: "All payments",
-                    d: "COD, Stripe, PayPal",
-                  },
-                ].map(({ i: I, t, d }) => (
-                  <div
-                    key={t}
-                    className="group/c flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-3.5 backdrop-blur transition duration-500 hover:-translate-y-1.5 hover:border-[#4aa3f0]/60 hover:bg-white/[0.12]"
-                  >
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#4aa3f0] to-[#0a3a78] transition duration-500 group-hover/c:rotate-12 group-hover/c:scale-110">
-                      <I size={17} />
-                    </span>
-                    <span className="min-w-0 leading-tight">
-                      <span className="block text-sm font-bold">{t}</span>
-                      <span className="text-[11px] text-white/60">{d}</span>
-                    </span>
-                  </div>
-                ))}
-              </div>
+              )}
             </div>
-
-            {/* Percent badge */}
-            <div className="relative mx-auto w-full max-w-[320px]">
-              <div className="absolute inset-0 animate-glow rounded-full bg-[#1d7fe0]/40 blur-3xl" />
-              <div className="sb-float relative aspect-square">
-                <svg
-                  viewBox="0 0 400 400"
-                  className="sb-spin absolute inset-0"
-                  aria-hidden="true"
+            <div
+              className="sb-rise mt-6 grid grid-cols-[repeat(auto-fit,minmax(10.5rem,1fr))] gap-3 sm:mt-8"
+              style={{ animationDelay: "480ms" }}
+            >
+              {[
+                { i: Zap, t: "Instant", d: "Live on the website" },
+                {
+                  i: BadgePercent,
+                  t: "Auto applied",
+                  d: "At cart & checkout",
+                },
+                {
+                  i: ShieldCheck,
+                  t: "All payments",
+                  d: "COD, Stripe, PayPal",
+                },
+              ].map(({ i: I, t, d }) => (
+                <div
+                  key={t}
+                  className="group/c flex min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-3 backdrop-blur transition duration-500 hover:-translate-y-1.5 hover:border-[#4aa3f0]/60 hover:bg-white/[0.12] sm:p-3.5"
                 >
-                  <defs>
-                    <path
-                      id={`sbRing-${preview ? "p" : "l"}`}
-                      d="M200,200 m-172,0 a172,172 0 1,1 344,0 a172,172 0 1,1 -344,0"
-                    />
-                  </defs>
-                  <circle
-                    cx="200"
-                    cy="200"
-                    r="192"
-                    fill="none"
-                    stroke="#4aa3f0"
-                    strokeOpacity=".55"
-                    strokeWidth="1.5"
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#4aa3f0] to-[#0a3a78] transition duration-500 group-hover/c:rotate-12 group-hover/c:scale-110">
+                    <I size={17} />
+                  </span>
+                  <span className="min-w-0 leading-tight">
+                    <span className="block text-sm font-bold">{t}</span>
+                    <span className="block text-[11px] text-white/60">{d}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Percent badge */}
+          <div className="sb-cq relative mx-auto w-full max-w-[240px] sm:max-w-[320px]">
+            <div className="absolute inset-0 animate-glow rounded-full bg-[#1d7fe0]/40 blur-3xl" />
+            <div className="sb-float relative aspect-square">
+              <svg
+                viewBox="0 0 400 400"
+                className="sb-spin absolute inset-0"
+                aria-hidden="true"
+              >
+                <defs>
+                  <path
+                    id={`sbRing-${preview ? "p" : "l"}`}
+                    d="M200,200 m-172,0 a172,172 0 1,1 344,0 a172,172 0 1,1 -344,0"
                   />
-                  <text
-                    fontFamily="Manrope, sans-serif"
-                    fontSize="17"
-                    fontWeight="800"
-                    letterSpacing="6"
-                    fill="#bfdcfa"
-                  >
-                    <textPath href={`#sbRing-${preview ? "p" : "l"}`}>
-                      SALE · {pct}% OFF · LIVE NOW · SALE · {pct}% OFF · LIVE
-                      NOW ·
-                    </textPath>
-                  </text>
-                </svg>
-                <div className="absolute inset-[13%] grid place-items-center rounded-full border border-white/20 bg-gradient-to-br from-[#1d7fe0] via-[#0a3a78] to-[#060607] text-center shadow-2xl shadow-black/50 transition duration-700 group-hover:scale-105">
-                  <div key={pct} className="sb-pop">
-                    <div className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/80">
-                      {s.same ? "Flat" : "Up to"}
-                    </div>
-                    <div className="font-display text-7xl font-bold leading-none sm:text-8xl">
-                      {pct}
-                      <span className="text-5xl sm:text-6xl">%</span>
-                    </div>
-                    <div className="mt-1 text-sm font-extrabold tracking-[0.4em]">
-                      OFF
-                    </div>
+                </defs>
+                <circle
+                  cx="200"
+                  cy="200"
+                  r="192"
+                  fill="none"
+                  stroke="#4aa3f0"
+                  strokeOpacity=".55"
+                  strokeWidth="1.5"
+                />
+                <text
+                  fontFamily="Manrope, sans-serif"
+                  fontSize="17"
+                  fontWeight="800"
+                  letterSpacing="6"
+                  fill="#bfdcfa"
+                >
+                  <textPath href={`#sbRing-${preview ? "p" : "l"}`}>
+                    SALE · {pct}% OFF · LIVE NOW · SALE · {pct}% OFF · LIVE NOW
+                    ·
+                  </textPath>
+                </text>
+              </svg>
+              <div className="absolute inset-[13%] grid place-items-center rounded-full border border-white/20 bg-gradient-to-br from-[#1d7fe0] via-[#0a3a78] to-[#060607] text-center shadow-2xl shadow-black/50 transition duration-700 group-hover:scale-105">
+                <div key={pct} className="sb-pop">
+                  <div className="sb-flat font-bold uppercase tracking-[0.3em] text-white/80">
+                    {s.same ? "Flat" : "Up to"}
+                  </div>
+                  <div className="sb-pct font-display font-bold">
+                    {pct}
+                    <span className="sb-pcts">%</span>
+                  </div>
+                  <div className="sb-off mt-1 font-extrabold tracking-[0.4em]">
+                    OFF
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* ticker */}
-          <div className="relative overflow-hidden border-t border-white/10 bg-black/30 py-3">
-            <div className="sb-marq flex w-max gap-10 whitespace-nowrap text-sm font-extrabold tracking-[0.3em] text-white/80">
-              {[...ticker, ...ticker].map((t, i) => (
-                <span key={i} className="flex items-center gap-10">
-                  {t}
-                  <Flame size={14} className="text-[#4aa3f0]" />
-                </span>
-              ))}
-            </div>
+        {/* ticker */}
+        <div className="relative overflow-hidden border-t border-white/10 bg-black/30 py-3">
+          <div className="sb-marq flex w-max gap-10 whitespace-nowrap text-sm font-extrabold tracking-[0.3em] text-white/80">
+            {[...ticker, ...ticker].map((t, i) => (
+              <span key={i} className="flex items-center gap-10">
+                {t}
+                <Flame size={14} className="text-[#4aa3f0]" />
+              </span>
+            ))}
           </div>
         </div>
-      </Reveal>
+      </div>
+    </div>
+  );
+
+  if (embedded)
+    return (
+      <div className={className}>
+        <style>{CSS}</style>
+        {card}
+      </div>
+    );
+  return (
+    <section className={`container-x py-10 sm:py-14 ${className}`}>
+      <style>{CSS}</style>
+      <Reveal>{card}</Reveal>
     </section>
   );
 }

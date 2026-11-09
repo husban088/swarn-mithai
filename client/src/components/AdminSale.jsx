@@ -26,7 +26,7 @@ const FILTERS = [
 ];
 
 const seg = (on) =>
-  `rounded-2xl border px-3 py-3 text-sm font-bold transition duration-300 ${
+  `rounded-2xl border px-2 py-3 text-sm font-bold sm:px-3 transition duration-300 ${
     on
       ? "gold-bg border-transparent text-white shadow-lg shadow-gold-500/30"
       : "border-gold-200 bg-white text-neutral-600 hover:-translate-y-0.5 hover:bg-gold-50 hover:shadow-md"
@@ -152,7 +152,7 @@ export default function AdminSale() {
   };
 
   return (
-    <div className="min-w-0 space-y-5 sm:space-y-7">
+    <div className="min-w-0 max-w-full space-y-5 overflow-x-clip sm:space-y-7">
       {/* ===== Hero / status ===== */}
       <section className="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-[#060607] via-[#0a3a78] to-[#1d7fe0] p-5 text-white shadow-2xl shadow-champ-300/40 sm:rounded-[2.25rem] sm:p-8">
         <div className="pointer-events-none absolute -right-12 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
@@ -162,7 +162,7 @@ export default function AdminSale() {
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white/80 backdrop-blur">
               <Sparkles size={12} /> Sale offers
             </span>
-            <h2 className="mt-3 font-display text-3xl font-bold leading-[1.05] sm:text-5xl">
+            <h2 className="mt-3 break-words font-display text-3xl font-bold leading-[1.05] sm:text-5xl">
               Sale control room
             </h2>
             <p className="mt-2 max-w-xl text-sm text-white/70">
@@ -170,7 +170,7 @@ export default function AdminSale() {
               badges aur nayi price live ho jati hain.
             </p>
           </div>
-          <div className="grid shrink-0 grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid w-full shrink-0 grid-cols-3 gap-2 sm:gap-3 lg:w-auto">
             {[
               [onSale.length, "On sale"],
               [topPct ? `${topPct}%` : "—", "Top discount"],
@@ -178,12 +178,12 @@ export default function AdminSale() {
             ].map(([v, l]) => (
               <div
                 key={l}
-                className="rounded-2xl border border-white/15 bg-white/10 px-3 py-3 text-center backdrop-blur sm:min-w-[104px] sm:px-5"
+                className="min-w-0 rounded-2xl border border-white/15 bg-white/10 px-2 py-3 text-center backdrop-blur sm:min-w-[104px] sm:px-5"
               >
-                <div className="text-2xl font-extrabold leading-none sm:text-3xl">
+                <div className="truncate text-xl font-extrabold leading-none sm:text-3xl">
                   {v}
                 </div>
-                <div className="mt-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-white/60 sm:text-[10px]">
+                <div className="mt-1.5 text-[8px] font-semibold uppercase tracking-[0.1em] text-white/60 min-[400px]:text-[9px] sm:text-[10px] sm:tracking-[0.16em]">
                   {l}
                 </div>
               </div>
@@ -227,12 +227,12 @@ export default function AdminSale() {
 
       {/* ===== Controls + banner preview ===== */}
       <div className="grid items-start gap-5 sm:gap-7 xl:grid-cols-[minmax(0,430px)_minmax(0,1fr)]">
-        <section className="min-w-0 rounded-[1.75rem] border border-gold-100 bg-white p-5 shadow-xl shadow-champ-200/40 sm:rounded-[2.25rem] sm:p-7">
+        <section className="min-w-0 rounded-[1.75rem] border border-gold-100 bg-white p-4 shadow-xl shadow-champ-200/40 min-[400px]:p-5 sm:rounded-[2.25rem] sm:p-7 xl:sticky xl:top-24">
           <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold-600">
             1 · Discount
           </div>
           <div className="mt-3 text-center">
-            <span className="bg-gradient-to-r from-[#0a3a78] to-[#1d7fe0] bg-clip-text text-6xl font-extrabold leading-none text-transparent sm:text-7xl">
+            <span className="bg-gradient-to-r from-[#0a3a78] to-[#1d7fe0] bg-clip-text text-5xl font-extrabold leading-none text-transparent min-[400px]:text-6xl sm:text-7xl">
               {percent}%
             </span>
             <span className="ml-2 align-top text-sm font-bold tracking-[0.3em] text-neutral-400">
@@ -249,7 +249,7 @@ export default function AdminSale() {
             className="mt-4 w-full accent-[#1d7fe0]"
             aria-label="Sale percent"
           />
-          <div className="mt-3 grid grid-cols-5 gap-2">
+          <div className="mt-3 grid grid-cols-5 gap-1.5 sm:gap-2">
             {CHOICES.map((c) => (
               <button
                 type="button"
@@ -288,12 +288,12 @@ export default function AdminSale() {
             </button>
           </div>
 
-          <div className="mt-6 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+          <div className="mt-6 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-1 min-[1500px]:grid-cols-2">
             <button
               type="button"
               disabled={busy || loading || !target}
               onClick={() => send(percent)}
-              className="btn-gold w-full justify-center whitespace-nowrap !py-3.5 disabled:opacity-50"
+              className="btn-gold w-full min-w-0 justify-center !py-3.5 disabled:opacity-50"
             >
               <Check size={16} />
               {busy ? "Saving…" : `Apply ${percent}%`}
@@ -302,7 +302,7 @@ export default function AdminSale() {
               type="button"
               disabled={busy || loading || !target}
               onClick={() => send(0)}
-              className="btn-line w-full justify-center whitespace-nowrap !py-3.5 disabled:opacity-50"
+              className="btn-line w-full min-w-0 justify-center !py-3.5 disabled:opacity-50"
             >
               <XCircle size={15} />
               {scope === "all" ? "Remove sale" : "Remove (selected)"}
@@ -318,11 +318,11 @@ export default function AdminSale() {
             <BadgePercent size={14} /> Home page banner preview
           </div>
           {preview.count > 0 ? (
-            <div className="overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem]">
+            <div className="overflow-hidden rounded-[1.75rem] sm:rounded-[2.5rem]">
               <SaleBanner variant="full" preview={preview} />
             </div>
           ) : (
-            <div className="grid min-h-[200px] place-items-center rounded-[1.75rem] border border-dashed border-champ-300 bg-gold-50/50 p-8 text-center text-sm text-neutral-500 sm:rounded-[2.25rem]">
+            <div className="grid min-h-[160px] place-items-center rounded-[1.75rem] border border-dashed border-champ-300 bg-gold-50/50 p-8 text-center text-sm text-neutral-500 sm:rounded-[2.25rem]">
               Preview ke liye products chunein.
             </div>
           )}
@@ -340,8 +340,8 @@ export default function AdminSale() {
               Card par click karke select karein, phir Apply dabayein.
             </p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <label className="relative block">
+          <div className="flex min-w-0 flex-col gap-2 md:flex-row md:items-center">
+            <label className="relative block w-full md:w-auto">
               <Search
                 size={15}
                 className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"
@@ -350,7 +350,7 @@ export default function AdminSale() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search product…"
-                className="field !pl-10 sm:w-60"
+                className="field !pl-10 md:w-60"
               />
             </label>
             <div className="flex flex-wrap gap-2">
@@ -376,7 +376,7 @@ export default function AdminSale() {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {loading &&
             Array.from({ length: 6 }, (_, i) => (
               <div
@@ -397,7 +397,7 @@ export default function AdminSale() {
                   aria-pressed={checked}
                   className={`group relative flex min-w-0 items-center gap-3 rounded-3xl border bg-white p-3 text-left transition duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-champ-200/50 ${checked ? "border-gold-500 shadow-lg ring-2 ring-gold-200" : "border-gold-100"}`}
                 >
-                  <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-gold-100 bg-gold-50 sm:h-[72px] sm:w-[72px]">
+                  <span className="relative h-14 w-14 shrink-0 min-[400px]:h-16 min-[400px]:w-16 overflow-hidden rounded-2xl border border-gold-100 bg-gold-50 sm:h-[72px] sm:w-[72px]">
                     <Thumb p={p} w={200} zoom={false} />
                   </span>
                   <span className="min-w-0 flex-1 pr-7">
@@ -452,8 +452,8 @@ export default function AdminSale() {
 
       {/* ===== Sticky action bar (selection ke baad) ===== */}
       {scope === "ids" && sel.size > 0 && (
-        <div className="sticky bottom-3 z-30 mx-auto w-full max-w-3xl">
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-3xl border border-champ-200 bg-white/90 p-2.5 pl-5 shadow-2xl shadow-champ-300/50 backdrop-blur-xl">
+        <div className="sticky bottom-3 z-30 mx-auto w-full max-w-3xl pb-[env(safe-area-inset-bottom)]">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-3xl border border-champ-200 bg-white/90 p-2.5 pl-4 sm:pl-5 shadow-2xl shadow-champ-300/50 backdrop-blur-xl">
             <span className="text-sm font-bold text-royal">
               {sel.size} selected
             </span>

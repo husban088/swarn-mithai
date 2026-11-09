@@ -45,7 +45,7 @@ export const COUNTRIES = {
     categories: ["sweets", "aqua"],
     tagline: "Pure Drinking Water",
     bar: "Cash on delivery across Pakistan · Evelyn One pure drinking water",
-    phone: "+92 300 6672053",
+    phone: "+92 304 5157004",
     phone2: "+92 302 8213652",
     city: "Faisalabad, Pakistan",
   },
