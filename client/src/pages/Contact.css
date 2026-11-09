@@ -1,0 +1,305 @@
+/* ===== Contact page (Evelyn One + Mithai House) ===== */
+
+/* Mouse ke saath chalti roshni (spotlight) - card ke andar */
+.ct-spot {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.ct-spot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  background: radial-gradient(
+    380px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(29, 127, 224, 0.16),
+    transparent 62%
+  );
+}
+.ct-spot:hover::before {
+  opacity: 1;
+}
+
+/* Info card */
+.ct-card {
+  position: relative;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(191, 220, 250, 0.8);
+  background: linear-gradient(160deg, #ffffff 0%, #f6faff 100%);
+  box-shadow: 0 1px 2px rgba(10, 58, 120, 0.05);
+  transition:
+    transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.5s ease,
+    border-color 0.4s ease;
+}
+.ct-card:hover {
+  transform: translateY(-5px);
+  border-color: #8cc3f5;
+  box-shadow: 0 24px 50px -22px rgba(19, 95, 184, 0.45);
+}
+.ct-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1.1rem;
+  color: #fff;
+  background: linear-gradient(135deg, #0b0b0d 0%, #0a3a78 55%, #1d7fe0 120%);
+  box-shadow: 0 10px 22px -10px rgba(19, 95, 184, 0.8);
+  transition:
+    transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
+    border-radius 0.5s ease;
+}
+.ct-icon::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: inherit;
+  border: 1px solid rgba(29, 127, 224, 0.35);
+  opacity: 0;
+  transform: scale(0.85);
+  transition: all 0.5s ease;
+}
+.ct-card:hover .ct-icon {
+  transform: rotate(-8deg) scale(1.08);
+  border-radius: 50%;
+}
+.ct-card:hover .ct-icon::after {
+  opacity: 1;
+  transform: scale(1);
+}
+.ct-copy {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  color: #135fb8;
+  background: #eaf4ff;
+  border: 1px solid #bfdcfa;
+  transition: all 0.3s ease;
+}
+.ct-copy:hover {
+  background: #1d7fe0;
+  color: #fff;
+  transform: scale(1.1);
+}
+.ct-copy:active {
+  transform: scale(0.92);
+}
+
+/* Form wrapper: dark luxury header + white body, ghoomta chamakta border */
+.ct-form {
+  position: relative;
+  border-radius: 2rem;
+  background: #fff;
+  box-shadow:
+    0 40px 80px -40px rgba(10, 58, 120, 0.45),
+    0 0 0 1px rgba(191, 220, 250, 0.9);
+}
+.ct-form::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--ang),
+    transparent 0 60%,
+    #4aa3f0 75%,
+    #eaf4ff 86%,
+    transparent 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: angSpin 7s linear infinite;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* Floating-label fields */
+.cf {
+  position: relative;
+}
+.cf-input {
+  width: 100%;
+  border: 1px solid #dcdce0;
+  border-radius: 1rem;
+  background: #fbfcfe;
+  padding: 1.55rem 1rem 0.6rem 3rem;
+  font-size: 0.95rem;
+  color: #0b0b0d;
+  outline: none;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    background 0.3s ease;
+}
+.cf-input:hover {
+  border-color: #8cc3f5;
+  background: #fff;
+}
+.cf-input:focus {
+  border-color: #1d7fe0;
+  background: #fff;
+  box-shadow: 0 0 0 4px #eaf4ff;
+}
+textarea.cf-input {
+  resize: none;
+  min-height: 9.5rem;
+  padding-top: 1.9rem;
+  line-height: 1.6;
+}
+.cf-ico {
+  position: absolute;
+  left: 1rem;
+  top: 1.2rem;
+  color: #9a9aa4;
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
+  pointer-events: none;
+}
+.cf-label {
+  position: absolute;
+  left: 3rem;
+  top: 1.1rem;
+  max-width: calc(100% - 3.5rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  color: #7c7c86;
+  pointer-events: none;
+  transform-origin: left top;
+  transition:
+    transform 0.25s ease,
+    color 0.25s ease,
+    letter-spacing 0.25s ease;
+}
+.cf-input:focus ~ .cf-label,
+.cf-input:not(:placeholder-shown) ~ .cf-label {
+  transform: translateY(-0.72rem) scale(0.76);
+  color: #135fb8;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.cf-input:focus ~ .cf-ico {
+  color: #1d7fe0;
+  transform: scale(1.12);
+}
+.cf-input::placeholder {
+  color: transparent;
+}
+.cf-err .cf-input {
+  border-color: #ef4444;
+  background: #fff8f8;
+}
+.cf-err .cf-input:focus {
+  box-shadow: 0 0 0 4px #fee2e2;
+}
+.cf-err .cf-ico {
+  color: #ef4444;
+}
+
+/* Topic chips */
+.ct-chip {
+  border-radius: 999px;
+  border: 1px solid #bfdcfa;
+  background: #f4f9ff;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0a3a78;
+  transition: all 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.ct-chip:hover {
+  transform: translateY(-2px);
+  border-color: #1d7fe0;
+  background: #eaf4ff;
+}
+.ct-chip[aria-pressed="true"] {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(120deg, #0b0b0d, #0a3a78 55%, #135fb8);
+  box-shadow: 0 10px 20px -10px rgba(19, 95, 184, 0.9);
+}
+
+/* Map */
+.ct-map iframe {
+  filter: grayscale(0.55) contrast(1.05);
+  transition: filter 0.6s ease;
+}
+.ct-map:hover iframe {
+  filter: grayscale(0) contrast(1);
+}
+
+/* Success tick */
+@keyframes ctDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes ctRing {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes ctPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(29, 127, 224, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 26px rgba(29, 127, 224, 0);
+  }
+}
+.ct-tick-wrap {
+  animation:
+    ctRing 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.3) both,
+    ctPulse 1.6s ease-out 0.5s 2;
+}
+.ct-tick {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: ctDraw 0.6s ease 0.45s forwards;
+}
+
+/* Floating drop / dot decor */
+@keyframes ctFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-18px) rotate(8deg);
+  }
+}
+.ct-float {
+  animation: ctFloat 9s ease-in-out infinite;
+}
+
+/* Touch devices par hover-lift band (sticky hover na rahe) */
+@media (hover: none) {
+  .ct-card:hover {
+    transform: none;
+  }
+  .ct-card:hover .ct-icon {
+    transform: none;
+    border-radius: 1.1rem;
+  }
+}
