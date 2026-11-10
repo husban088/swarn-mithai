@@ -8,7 +8,7 @@ import {
 } from "../config";
 
 // ---------- palette ----------
-// Site ki theme: black + blue + white (USA Mithai House aur Pakistan Evelyn One dono invoices me yehi)
+// Site ki theme: black + blue + white (USA Best Mithai aur Pakistan Evelyn One dono invoices me yehi)
 const BLACK = [11, 11, 13];
 const BLACK_DEEP = [4, 4, 5];
 const BLUE = [29, 127, 224]; // site ka water blue
@@ -230,7 +230,7 @@ function kv(doc, k, v, x, y, w) {
   return Math.max(1, lines.length) * 4.4;
 }
 
-// Order kis brand ka hai: sirf mithai (sweets) = "US" (Mithai House), sirf water (aqua) = "PK" (Evelyn One).
+// Order kis brand ka hai: sirf mithai (sweets) = "US" (Best Mithai), sirf water (aqua) = "PK" (Evelyn One).
 // Mix order = country se.
 // Purane orders me item ki category save nahi hoti thi (Pakistan ka mithai order bhi Evelyn One ban jata tha),
 // isliye category na ho to item ke naam se pehchante hain: water ke lafz = aqua, baqi sab mithai.
@@ -254,7 +254,7 @@ export const brandKeyOf = (order) => {
 function renderInvoice(doc, order) {
   const startPage = doc.getNumberOfPages();
   const country = order.country === "PK" ? "PK" : "US";
-  // Brand / contact details order ke products ke hisaab se: sirf mithai = Mithai House, sirf water = Evelyn One
+  // Brand / contact details order ke products ke hisaab se: sirf mithai = Best Mithai, sirf water = Evelyn One
   const brandKey = brandKeyOf(order);
   const brand = BRANDS[brandKey] || BRANDS.US;
   const cur = order.currency === "PKR" ? "PKR" : "USD";
@@ -568,7 +568,7 @@ const slug = (t) =>
     .slice(0, 60) || "all";
 const byDateAsc = (a, b) => new Date(a.created_at) - new Date(b.created_at);
 
-function coverHeader(doc, first, period, brandName = "MITHAI HOUSE & EVELYN ONE", letter = "S") {
+function coverHeader(doc, first, period, brandName = "BEST MITHAI & EVELYN ONE", letter = "B") {
   fill(doc, BLACK);
   doc.rect(0, 0, PAGE_W, first ? 58 : 22, "F");
   fill(doc, BLUE);
@@ -615,14 +615,14 @@ function coverHeader(doc, first, period, brandName = "MITHAI HOUSE & EVELYN ONE"
   }
 }
 
-// Cover par brand: sab orders Mithai House ke = Mithai House, sab Evelyn One ke = Evelyn One, mix = dono
+// Cover par brand: sab orders Best Mithai ke = Best Mithai, sab Evelyn One ke = Evelyn One, mix = dono
 function coverBrand(orders) {
   const keys = new Set(orders.map(brandKeyOf));
   if (keys.size === 1) {
     const b = BRANDS[[...keys][0]] || BRANDS.US;
     return [clean(b.name).toUpperCase(), b.letter];
   }
-  return ["MITHAI HOUSE & EVELYN ONE", "S"];
+  return ["BEST MITHAI & EVELYN ONE", "B"];
 }
 
 function drawCover(doc, orders, period) {

@@ -178,7 +178,7 @@ module.exports = function mountOrders(ctx) {
           {
             reference_id: order.id,
             custom_id: order.id,
-            description: `${order.country === "PK" ? "Evelyn One" : "Mithai House"} order #${short(order.id)}`,
+            description: `${order.country === "PK" ? "Evelyn One" : "Best Mithai"} order #${short(order.id)}`,
             amount: {
               currency_code: "USD",
               value: ppAmount(order, (await getRate()).rate),
@@ -189,7 +189,7 @@ module.exports = function mountOrders(ctx) {
           paypal: {
             experience_context: {
               brand_name:
-                order.country === "PK" ? "Evelyn One" : "Mithai House",
+                order.country === "PK" ? "Evelyn One" : "Best Mithai",
               user_action: "PAY_NOW",
               shipping_preference: "NO_SHIPPING",
               return_url: `${base}/order-placed/${order.id}`,
@@ -302,12 +302,12 @@ module.exports = function mountOrders(ctx) {
         return res
           .status(400)
           .json({ error: "PayPal is not set up yet (PayPal keys missing)." });
-      // Bank transfer (Citibank): sirf Mithai House (USA). Receipt image lazmi hai, uske baghair order place nahi hota.
+      // Bank transfer (Citibank): sirf Best Mithai (USA). Receipt image lazmi hai, uske baghair order place nahi hota.
       const receiptUrl = String(req.body?.receipt_url || "").trim();
       if (method === "bank") {
         if (country !== "US")
           return res.status(400).json({
-            error: "Bank transfer is only available for Mithai House (USA).",
+            error: "Bank transfer is only available for Best Mithai (USA).",
           });
         if (!receiptUrl)
           return res.status(400).json({

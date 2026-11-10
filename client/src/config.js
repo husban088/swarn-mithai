@@ -1,10 +1,10 @@
 // Brand + country settings. Yahan se phone/email/address badal sakte hain.
 export const BRAND = {
-  name: "Mithai House",
-  email: "hello@mithaihouse.example",
+  name: "Best Mithai",
+  email: "hello@bestmithai.example",
 };
 
-// Country ke hisaab se brand: Pakistan = Evelyn One (water), USA = Mithai House (mithai).
+// Country ke hisaab se brand: Pakistan = Evelyn One (water), USA = Best Mithai (mithai).
 // Naam / tagline / email yahin se badal sakte hain.
 export const BRANDS = {
   PK: {
@@ -22,12 +22,12 @@ export const BRANDS = {
     blurb: "Purified water, tested and sealed fresh.",
   },
   US: {
-    key: "mithaihouse",
-    name: "Mithai House",
-    letter: "M",
+    key: "bestmithai",
+    name: "Best Mithai",
+    letter: "B",
     drop: false,
-    logo: "/brand/mithai-house.png", // safed background par (kala logo, transparent)
-    logoLight: "/brand/mithai-house-light.png", // dark / blue background par (safed logo, transparent)
+    logo: "/brand/best-mithai.png", // safed background par (kala logo, transparent)
+    logoLight: "/brand/best-mithai-light.png", // dark / blue background par (safed logo, transparent)
     tagline: "Handcrafted Mithai",
     email: "shahidmahmood73@hotmail.com",
     owner: "Shahid Mubasher",
@@ -117,7 +117,7 @@ export const PAYMENT_STATUS_LABELS = {
 
 // ---- Alag alag link (Vercel project) har country ke liye ----
 // Vercel me VITE_SITE_COUNTRY=PK  -> ye link hamesha sirf Pakistan (Evelyn One, PKR)
-// Vercel me VITE_SITE_COUNTRY=US  -> ye link hamesha sirf USA (Mithai House, USD)
+// Vercel me VITE_SITE_COUNTRY=US  -> ye link hamesha sirf USA (Best Mithai, USD)
 // Khali chhorein to purana tareeqa: visitor ki country khud pehchani jati hai.
 const _site = String(import.meta.env.VITE_SITE_COUNTRY || "")
   .trim()
@@ -128,7 +128,7 @@ export const SITE_COUNTRY = COUNTRIES[_site] ? _site : "";
 // Jo country chuno, poori website usi country ki ban jati hai.
 export const COUNTRY_SWITCH_EMAILS = ["wjahattahir@gmail.com"];
 
-// Mithai House (USA) bank transfer. Number / naam yahin se badal sakte hain.
+// Best Mithai (USA) bank transfer. Number / naam yahin se badal sakte hain.
 export const BANK = {
   bank: "Citibank",
   account: "9997315696",

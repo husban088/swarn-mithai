@@ -81,17 +81,17 @@
     </div>
     <script>
       // React load hone se pehle hi sahi country ka logo:
-      //   Pakistan = Evelyn One, USA = Mithai House.
+      //   Pakistan = Evelyn One, USA = Best Mithai.
       // Galat logo kabhi nahi dikhta: jab tak country pakki na ho sirf spinner chalta hai.
       // Priority: 1) alag link (VITE_SITE_COUNTRY) 2) ?country=PK/US
       //           3) admin (wjahattahir) ka dropdown choice 4) asli IP (VPN friendly)
       (function () {
         var ADMINS = ["wjahattahir@gmail.com"];
         var geo = (window.__geo = { code: null, real: false, promise: null });
-        // Browser tab ka icon: Pakistan = Evelyn One, USA = Mithai House (React bhi country badalne par isay chalata hai)
+        // Browser tab ka icon: Pakistan = Evelyn One, USA = Best Mithai (React bhi country badalne par isay chalata hai)
         window.__setFavicon = function (c) {
           try {
-            var n = c === "PK" ? "evelyn-one" : "mithai-house";
+            var n = c === "PK" ? "evelyn-one" : "best-mithai";
             var old = document.querySelectorAll('link[rel~="icon"],link[rel="apple-touch-icon"]');
             for (var i = 0; i < old.length; i++) old[i].parentNode.removeChild(old[i]);
             var add = function (rel, href, type, sizes) {
@@ -113,8 +113,8 @@
           window.__setFavicon(c);
           try {
             var img = document.getElementById("boot-logo");
-            img.src = c === "PK" ? "/brand/evelyn-one-light.svg" : "/brand/mithai-house-light.png";
-            img.alt = c === "PK" ? "Evelyn One" : "Mithai House";
+            img.src = c === "PK" ? "/brand/evelyn-one-light.svg" : "/brand/best-mithai-light.png";
+            img.alt = c === "PK" ? "Evelyn One" : "Best Mithai";
             img.hidden = false;
           } catch (e) {}
         }

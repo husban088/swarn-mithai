@@ -5,7 +5,7 @@ import { useAdminView } from "./adminView";
 // Har admin sirf apni brand ka data dekhta hai (server user.adminScope bhejta hai):
 //   wjahattahir@gmail.com           -> Pakistan, Evelyn One (aqua), PKR
 //                                      + Admin page par Pakistan / USA dropdown (USA ke liye USA admin ka login)
-//   shahidmahmood73@hotmail.com     -> USA, Mithai House (sweets), USD  (koi dropdown nahi)
+//   shahidmahmood73@hotmail.com     -> USA, Best Mithai (sweets), USD  (koi dropdown nahi)
 export function useAdminScope() {
   const { user } = useAuth();
   const view = useAdminView();
@@ -26,8 +26,8 @@ export function useAdminScope() {
     isSuper,
     email: active.email,
     cur: pk ? "PKR" : "USD",
-    brand: pk ? "Evelyn One" : "Mithai House",
-    logo: pk ? "/brand/evelyn-one.svg" : "/brand/mithai-house.png",
+    brand: pk ? "Evelyn One" : "Best Mithai",
+    logo: pk ? "/brand/evelyn-one.svg" : "/brand/best-mithai.png",
     mark: pk ? "/brand/evelyn-one-mark.svg" : null,
     market: pk ? "Pakistan" : "USA",
   };

@@ -26,7 +26,7 @@ const ROWS = [
 
 export default function WhyUs() {
   const { STATS, TESTIMONIALS, WHY, sweets } = useContent();
-  const brand = sweets ? "Mithai House" : "Evelyn One";
+  const brand = sweets ? "Best Mithai" : "Evelyn One";
   return (
     <div>
       <PageHero

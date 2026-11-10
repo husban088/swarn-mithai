@@ -64,7 +64,7 @@ export default function HighlightCards({ sweets }) {
       <style>{CSS}</style>
       <div className="container-x">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="eyebrow">{sweets ? "The Mithai House promise" : "The Evelyn One promise"}</span>
+          <span className="eyebrow">{sweets ? "The Best Mithai promise" : "The Evelyn One promise"}</span>
           <h2 className="title-lg mt-3">
             {sweets ? "Made with care, delivered with pride" : "Purity you can taste"}
           </h2>

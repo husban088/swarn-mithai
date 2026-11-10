@@ -266,7 +266,7 @@ function GeoProvider({ children }) {
 
   // Pakistan me Mithai sirf allowed email (server decide karta hai: user.pkMithai) ko dikhti hai.
   // Baqi sab ko Pakistan me sirf Evelyn One (water).
-  // Dropdown wala admin: Pakistan = sirf Evelyn One, USA = sirf Mithai House
+  // Dropdown wala admin: Pakistan = sirf Evelyn One, USA = sirf Best Mithai
   const active = SITE_COUNTRY || (canSwitch && override ? override : code);
   const pkMithai = !!user?.pkMithai && !canSwitch;
   const country = useMemo(() => {

@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import { brandFor } from "../config";
 import { useGeo } from "../store";
 
-// Mark: chhota seal (Mithai House = "M", Evelyn One = paani ki boond). Navbar/footer me asli logo (Logo) use hota hai.
-export function Mark({ size = 44, letter = "M", drop = false }) {
+// Mark: chhota seal (Best Mithai = "M", Evelyn One = paani ki boond). Navbar/footer me asli logo (Logo) use hota hai.
+export function Mark({ size = 44, letter = "B", drop = false }) {
   const id = `lg-${letter}${drop ? "d" : "s"}`;
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
@@ -75,9 +75,9 @@ export function Mark({ size = 44, letter = "M", drop = false }) {
   );
 }
 
-// Country ke hisaab se asli brand logo (Pakistan = Evelyn One, USA = Mithai House).
+// Country ke hisaab se asli brand logo (Pakistan = Evelyn One, USA = Best Mithai).
 // Dono transparent hain (koi white plate/box nahi). BrandMark blue/dark cards par use hota hai,
-// isliye Mithai House ka safed (light) logo lagta hai. Safed background par light={false} do.
+// isliye Best Mithai ka safed (light) logo lagta hai. Safed background par light={false} do.
 export function BrandMark({ size = 44, light = true }) {
   const { country } = useGeo();
   const b = brandFor(country?.code);
@@ -112,8 +112,8 @@ export default function Logo({ light = false, compact }) {
   const small = compact ?? !light;
 
   let src = b.logo;
-  let cls = "h-16 sm:h-[4.5rem]"; // Mithai House
-  if (light && b.logoLight) src = b.logoLight; // Mithai House: dark background par safed logo
+  let cls = "h-16 sm:h-[4.5rem]"; // Best Mithai
+  if (light && b.logoLight) src = b.logoLight; // Best Mithai: dark background par safed logo
   if (evelyn) {
     if (small) {
       src = light ? b.logoCompactLight : b.logoCompact;

@@ -14,9 +14,9 @@ import Tilt from "./Tilt";
 import { BrandMark } from "./Logo";
 
 const SWEETS = {
-  eyebrow: "About Mithai House",
+  eyebrow: "About Best Mithai",
   title: "Sweets the way your elders made them",
-  p1: "Mithai House is the standard we cook to. Every piece is hand rolled in small batches with pure desi ghee, real khoya, whole nuts and saffron, then packed like a gift because that is what it is.",
+  p1: "Best Mithai is the standard we cook to. Every piece is hand rolled in small batches with pure desi ghee, real khoya, whole nuts and saffron, then packed like a gift because that is what it is.",
   p2: "No shortcuts, no artificial flavour and no stale boxes sitting in a warehouse. Cooked fresh, sealed with care and delivered to your door.",
   big: "Since the first batch",
   small: "Handcrafted with patience",

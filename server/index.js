@@ -41,7 +41,7 @@ if (!ready)
 
 // Admin roles: har admin sirf apni country/brand ka data dekhta hai.
 //   Pakistan admin  -> sirf Evelyn One (aqua) products + PKR orders
-//   USA admin       -> sirf Mithai House (sweets) products + USD orders
+//   USA admin       -> sirf Best Mithai (sweets) products + USD orders
 // Badalne ke liye server/.env me PK_ADMIN_EMAILS / US_ADMIN_EMAILS likhein (comma separated).
 const list = (v) =>
   String(v || "")
@@ -55,7 +55,7 @@ const US_ADMINS = list(
 const ADMINS = [...PK_ADMINS, ...US_ADMINS];
 const SCOPES = {
   PK: { country: "PK", category: "aqua", brand: "Evelyn One" },
-  US: { country: "US", category: "sweets", brand: "Mithai House" },
+  US: { country: "US", category: "sweets", brand: "Best Mithai" },
 };
 const adminScopeFor = (e) => {
   const m = String(e || "").toLowerCase();
@@ -67,7 +67,7 @@ const isAdminEmail = (e) => !!adminScopeFor(e);
 // Region ke admins (order / contact emails sirf unhi ko jayen)
 const adminsOf = (country) => (country === "PK" ? PK_ADMINS : US_ADMINS);
 
-// ---- Admin data isolation: Evelyn One admin ko sirf water (aqua) orders, Mithai House admin ko sirf mithai (sweets) ----
+// ---- Admin data isolation: Evelyn One admin ko sirf water (aqua) orders, Best Mithai admin ko sirf mithai (sweets) ----
 // Order ke item ki category save hoti hai. Purane orders me na ho to naam se pehchante hain
 // (water ke lafz = aqua, baqi sab mithai), bilkul client/src/lib/invoice.js jaisa.
 const AQUA_WORDS =
@@ -97,14 +97,14 @@ const orderMail = require("./orderEmail");
 async function sendMail(to, subject, html, country, opts = {}) {
   const pk = normCountry(country) === "PK";
   return orderMail.sendRegional(pk ? "PK" : "US", {
-    fromName: pk ? "Evelyn One" : "Mithai House",
+    fromName: pk ? "Evelyn One" : "Best Mithai",
     to,
     subject,
     html,
     ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
   });
 }
-const wrapMail = (title, body, brand = "Mithai House") => `
+const wrapMail = (title, body, brand = "Best Mithai") => `
 <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;border:1px solid #B9D6FF;border-radius:14px;overflow:hidden">
   <div style="background:#0A1F44;padding:22px;text-align:center"><h1 style="margin:0;color:#6FAEFF;font-size:24px;letter-spacing:2px">${esc(String(brand).toUpperCase())}</h1></div>
   <div style="padding:24px;color:#222"><h2 style="margin-top:0">${title}</h2>${body}</div>
@@ -603,7 +603,7 @@ app.post(
     if (e2) return res.status(400).json({ error: e2.message });
     const user = userShape(data.user);
     const pk = normCountry(req.body?.country) === "PK";
-    const brandName = pk ? "Evelyn One" : "Mithai House";
+    const brandName = pk ? "Evelyn One" : "Best Mithai";
     bg(
       sendMail(
         user.email,
@@ -1081,7 +1081,7 @@ app.post(
   }),
 );
 
-// Public: bank payment receipt (Mithai House / Citibank) -> Cloudinary
+// Public: bank payment receipt (Best Mithai / Citibank) -> Cloudinary
 // Sirf JPG / PNG / WEBP. Checkout par order tab hi place hota hai jab receipt upload ho chuki ho.
 app.post(
   "/api/upload/receipt",
@@ -1274,7 +1274,7 @@ app.post(
             (clean.phone ? `<p>Phone: ${esc(clean.phone)}</p>` : "") +
             (clean.topic ? `<p>Topic: ${esc(clean.topic)}</p>` : "") +
             `<p>${esc(clean.message).replace(/\n/g, "<br>")}</p>`,
-          cc === "PK" ? "Apna Pani" : "Mithai House",
+          cc === "PK" ? "Apna Pani" : "Best Mithai",
         ),
         cc,
         { replyTo: clean.email },
@@ -1523,7 +1523,7 @@ app.patch(
           wrapMail(
             "Order update",
             `<p>Hi ${esc(ord.customer?.name || "")}, your order <b>#${ord.id.slice(0, 8).toUpperCase()}</b> is now <b>${esc(status)}</b>.</p>`,
-            ord.country === "PK" ? "Evelyn One" : "Mithai House",
+            ord.country === "PK" ? "Evelyn One" : "Best Mithai",
           ),
           ord.country,
         ),
@@ -1564,7 +1564,7 @@ if (require.main === module) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () =>
     console.log(
-      `Evelyn One + Mithai House server running on http://localhost:${PORT}`,
+      `Evelyn One + Best Mithai server running on http://localhost:${PORT}`,
     ),
   );
 }

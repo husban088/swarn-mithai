@@ -54,7 +54,7 @@ export default function About() {
         accent={sweets ? "tradition" : "every day"}
         text={
           sweets
-            ? "Mithai House is the standard we hold every sweet to, from the first stir of the pan to the last ribbon on the box."
+            ? "Best Mithai is the standard we hold every sweet to, from the first stir of the pan to the last ribbon on the box."
             : "Evelyn One is the standard we hold our water to, from the first filter to the final seal on the bottle."
         }
       />
@@ -69,7 +69,7 @@ export default function About() {
           </h2>
           <p className="mt-5 leading-relaxed text-neutral-600">
             {sweets
-              ? "Mithai House started with a simple belief: mithai should taste the way it did when your grandmother made it for Eid. Slow cooked, ghee rich and never rushed."
+              ? "Best Mithai started with a simple belief: mithai should taste the way it did when your grandmother made it for Eid. Slow cooked, ghee rich and never rushed."
               : "Evelyn One started with a simple belief: clean drinking water should be easy to get, reliable and fairly priced for every home and office."}
           </p>
           <p className="mt-4 leading-relaxed text-neutral-600">
@@ -91,7 +91,7 @@ export default function About() {
                   <BrandMark size={150} />
                 </div>
                 <p className="mt-5 font-display text-4xl font-bold text-champ-200">
-                  {sweets ? "Mithai House" : "Evelyn One"}
+                  {sweets ? "Best Mithai" : "Evelyn One"}
                 </p>
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-champ-400">
                   {sweets ? "Mithai and Sweets" : "Pure Drinking Water"}

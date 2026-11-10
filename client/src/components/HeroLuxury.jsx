@@ -589,7 +589,7 @@ export default function HeroLuxury() {
                   <textPath href="#hero-ring">
                     {code === "PK"
                       ? "EVELYN ONE · PURE · SEALED · FRESH · "
-                      : "MITHAI HOUSE · HANDMADE · PURE GHEE · "}
+                      : "BEST MITHAI · HANDMADE · PURE GHEE · "}
                   </textPath>
                 </text>
               </svg>

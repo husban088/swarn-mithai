@@ -22,7 +22,7 @@ const META = {
   sweets: {
     img: null,
     dark: false,
-    kicker: "Mithai House",
+    kicker: "Best Mithai",
     points: [
       "Pure desi ghee & real khoya",
       "20 signature varieties",
@@ -108,7 +108,7 @@ function CatFrame({ cands, emoji, dark }) {
   );
 }
 
-// "Evelyn One aur Mithai House" ke 2 luxury cards (pure white section)
+// "Evelyn One aur Best Mithai" ke 2 luxury cards (pure white section)
 export default function CategoryCards({ sweets, aqua }) {
   const { country } = useGeo();
   const { products } = useShop();

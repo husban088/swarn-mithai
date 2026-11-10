@@ -159,7 +159,7 @@ const STEPS = [
 export default function Events() {
   const { country } = useGeo();
   const { products } = useShop();
-  // Events sirf Mithai House (mithai) ke liye
+  // Events sirf Best Mithai (mithai) ke liye
   if (!country.categories.includes("sweets"))
     return <Navigate to="/" replace />;
 

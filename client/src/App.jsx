@@ -194,18 +194,18 @@ export default function App() {
   track(pathname); // pichla page yaad rakho (Back to shop ke liye)
   usePrefetchPages();
 
-  // Browser tab title + search description: Pakistan = Evelyn One (water), baqi = Mithai House (mithai)
+  // Browser tab title + search description: Pakistan = Evelyn One (water), baqi = Best Mithai (mithai)
   useEffect(() => {
     if (!country) return;
     const pk = country.code === "PK";
     const b = brandFor(country.code);
-    if (window.__setFavicon) window.__setFavicon(country.code); // tab icon: PK = Evelyn One, US = Mithai House
+    if (window.__setFavicon) window.__setFavicon(country.code); // tab icon: PK = Evelyn One, US = Best Mithai
     document.title = pk
       ? `${b.name} - Pure Drinking Water`
-      : "Mithai House - Luxury Mithai & Special Event Boxes";
+      : "Best Mithai - Luxury Mithai & Special Event Boxes";
     const desc = pk
       ? `${b.name}: purified drinking water in 500 ml, 1.5 L and 19 L bottles. Home and office delivery with pay on delivery.`
-      : "Mithai House: luxury Pakistani mithai in 20 varieties. Special event boxes for weddings, birthdays and baby born. Second-day delivery.";
+      : "Best Mithai: luxury Pakistani mithai in 20 varieties. Special event boxes for weddings, birthdays and baby born. Second-day delivery.";
     let m = document.querySelector('meta[name="description"]');
     if (!m) {
       m = document.createElement("meta");

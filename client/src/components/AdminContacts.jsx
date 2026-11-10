@@ -227,7 +227,7 @@ function MessageCard({ m, open, onToggle, onStatus, onDelete, busy }) {
   const st = STATUS[m.status] || STATUS.new;
   const initial = (m.name || "?").trim().charAt(0).toUpperCase();
   const replySubject = encodeURIComponent(
-    `Re: ${m.topic || "your message"} - ${m.country === "PK" ? "Apna Pani" : "Mithai House"}`,
+    `Re: ${m.topic || "your message"} - ${m.country === "PK" ? "Apna Pani" : "Best Mithai"}`,
   );
   const waNum = digits(m.phone);
 

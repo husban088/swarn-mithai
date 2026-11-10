@@ -1,7 +1,7 @@
 // Order / checkout / cart emails (customer ko details + admin ko copy).
 // Har region ka apna sender hai:
 //   Pakistan (Evelyn One, PKR)  -> wjahattahir@gmail.com        (Gmail SMTP:   SMTP_USER / SMTP_PASS)
-//   USA (Mithai House, USD)     -> shahidmahmood73@hotmail.com  (Outlook SMTP: US_SMTP_USER / US_SMTP_PASS)
+//   USA (Best Mithai, USD)     -> shahidmahmood73@hotmail.com  (Outlook SMTP: US_SMTP_USER / US_SMTP_PASS)
 // Test karne ke liye (server folder me):  node orderEmail.js customer@gmail.com PK
 require("dotenv").config();
 const nodemailer = require("nodemailer");
@@ -9,7 +9,7 @@ const nodemailer = require("nodemailer");
 const BRANDS = {
   PK: { name: "Evelyn One", tagline: "Pure Drinking Water" },
   US: {
-    name: "Mithai House",
+    name: "Best Mithai",
     tagline: "Handcrafted Mithai",
     contact:
       "Shahid Mubasher · +1 (927) 937-8117 · shahidmahmood73@hotmail.com · 11 Tulsa St, Huntington, NY 11743, USA",
@@ -226,7 +226,7 @@ function payLine(order) {
     : `${n} - awaiting payment`;
 }
 
-// Brand country se: Pakistan = Evelyn One (PKR), USA = Mithai House (USD)
+// Brand country se: Pakistan = Evelyn One (PKR), USA = Best Mithai (USD)
 const brandOf = (order) => BRANDS[regionOf(order.country)];
 
 function buildOrderEmail(order, { admin = false } = {}) {
@@ -405,7 +405,7 @@ module.exports = { sendOrderMails, buildOrderEmail, verify, sendRegional };
 
 /* ------------------------- Quick test -------------------------
    server folder me:   node orderEmail.js customer@gmail.com PK
-   (PK = Evelyn One water email, US = Mithai House mithai email)                */
+   (PK = Evelyn One water email, US = Best Mithai mithai email)                */
 if (require.main === module) {
   (async () => {
     const to = process.argv[2];

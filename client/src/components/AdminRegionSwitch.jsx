@@ -18,8 +18,8 @@ const REGIONS = {
   US: {
     flag: "🇺🇸",
     label: "USA",
-    brand: "Mithai House",
-    logo: "/brand/mithai-house-light.png", // header dark blue hai, isliye safed logo
+    brand: "Best Mithai",
+    logo: "/brand/best-mithai-light.png", // header dark blue hai, isliye safed logo
     wide: true,
   },
 };

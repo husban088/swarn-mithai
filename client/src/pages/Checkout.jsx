@@ -144,7 +144,7 @@ export default function Checkout() {
   const topRef = useRef(null);
   const firstRun = useRef(true);
   const [pay, setPay] = useState("cod");
-  // Bank transfer (Mithai House): receipt image lazmi
+  // Bank transfer (Best Mithai): receipt image lazmi
   const [receipt, setReceipt] = useState({ url: "", preview: "", name: "" });
   const [rcUp, setRcUp] = useState(false);
   const [rcOk, setRcOk] = useState(false);
@@ -400,7 +400,7 @@ export default function Checkout() {
       ok: cfg.paypal,
     },
   ];
-  // Mithai House (USA): bank transfer (Citibank) bhi, receipt upload ke saath
+  // Best Mithai (USA): bank transfer (Citibank) bhi, receipt upload ke saath
   if (country.code === "US")
     allMethods.push({
       key: "bank",

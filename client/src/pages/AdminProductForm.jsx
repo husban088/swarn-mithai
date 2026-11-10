@@ -542,7 +542,7 @@ export default function AdminProductForm() {
             hint={
               aqua
                 ? "Evelyn One: sirf PKR price likhein"
-                : "Mithai House: sirf USD price likhein"
+                : "Best Mithai: sirf USD price likhein"
             }
             delay={80}
           >
